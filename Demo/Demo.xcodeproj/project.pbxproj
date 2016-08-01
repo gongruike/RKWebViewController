@@ -14,6 +14,7 @@
 		9F81B2C81D4F1A7600FBD02C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9F81B2C61D4F1A7600FBD02C /* LaunchScreen.storyboard */; };
 		9F81B2D31D4F1A7600FBD02C /* DemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F81B2D21D4F1A7600FBD02C /* DemoTests.swift */; };
 		9F81B2DE1D4F1A7600FBD02C /* DemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F81B2DD1D4F1A7600FBD02C /* DemoUITests.swift */; };
+		9F81B2F01D4F1B7100FBD02C /* RKWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F81B2EF1D4F1B7100FBD02C /* RKWebViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		9F81B2D91D4F1A7600FBD02C /* DemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F81B2DD1D4F1A7600FBD02C /* DemoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoUITests.swift; sourceTree = "<group>"; };
 		9F81B2DF1D4F1A7600FBD02C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9F81B2EF1D4F1B7100FBD02C /* RKWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RKWebViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +99,7 @@
 		9F81B2BC1D4F1A7600FBD02C /* Demo */ = {
 			isa = PBXGroup;
 			children = (
+				9F81B2EE1D4F1B6100FBD02C /* RKWebViewController */,
 				9F81B2BD1D4F1A7600FBD02C /* AppDelegate.swift */,
 				9F81B2BF1D4F1A7600FBD02C /* ViewController.swift */,
 				9F81B2C11D4F1A7600FBD02C /* Main.storyboard */,
@@ -123,6 +126,15 @@
 				9F81B2DF1D4F1A7600FBD02C /* Info.plist */,
 			);
 			path = DemoUITests;
+			sourceTree = "<group>";
+		};
+		9F81B2EE1D4F1B6100FBD02C /* RKWebViewController */ = {
+			isa = PBXGroup;
+			children = (
+				9F81B2EF1D4F1B7100FBD02C /* RKWebViewController.swift */,
+			);
+			name = RKWebViewController;
+			path = ../../RKWebViewController;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -257,6 +269,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9F81B2C01D4F1A7600FBD02C /* ViewController.swift in Sources */,
+				9F81B2F01D4F1B7100FBD02C /* RKWebViewController.swift in Sources */,
 				9F81B2BE1D4F1A7600FBD02C /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -403,6 +416,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.gongruike.Demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -414,6 +428,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.gongruike.Demo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -482,6 +497,7 @@
 				9F81B2E41D4F1A7600FBD02C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9F81B2E51D4F1A7600FBD02C /* Build configuration list for PBXNativeTarget "DemoTests" */ = {
 			isa = XCConfigurationList;
@@ -490,6 +506,7 @@
 				9F81B2E71D4F1A7600FBD02C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9F81B2E81D4F1A7600FBD02C /* Build configuration list for PBXNativeTarget "DemoUITests" */ = {
 			isa = XCConfigurationList;
@@ -498,6 +515,7 @@
 				9F81B2EA1D4F1A7600FBD02C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
