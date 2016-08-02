@@ -13,6 +13,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        view.backgroundColor = UIColor.brownColor()
+        
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -20,6 +23,12 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    @IBAction func onPushBtnClicked(sender: UIButton) {
+        
+        let webViewController = RKWebViewController(string: "")
+        showViewController(webViewController, sender: nil)
+//        navigationController?.pushViewController(webViewController, animated: true)
+    }
 
 }
 

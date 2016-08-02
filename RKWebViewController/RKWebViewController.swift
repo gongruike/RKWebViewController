@@ -9,28 +9,37 @@
 import UIKit
 import WebKit
 
+private let WKWebViewTitleKeyPath           = ""
+private let WKWebViewCanGoBackKeyPath       = ""
+private let WKWebViewLoadingKeyPath         = ""
+private let WKWebViewProgressKeyPath        = ""
+
 public class RKWebViewController: UIViewController {
 
-    public var url: String = ""
+    private struct Keys {
+        static let a = ""
+    }
+    
+    public var request: NSURLRequest
     
     public var webViewConfiguration: WKWebViewConfiguration?
-    
-    public var showToolBar: Bool = true
+    // Only Effect On iPhone. Default is false
+    public var hideToolBar: Bool = false
     
     public lazy var webView: WKWebView! = {
         //
-        let configuration = WKWebViewConfiguration()
+        let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
         //
-        let awebView = WKWebView(frame: CGRect.zero, configuration: configuration)
+        let wk = WKWebView(frame: CGRect.zero, configuration: configuration)
         //
-        awebView.navigationDelegate = self
+        wk.navigationDelegate = self
         //
-        awebView.UIDelegate = self
+        wk.UIDelegate = self
         //
-        return awebView
+        return wk
     }()
     
-    lazy var loadingIndicatorView: UIActivityIndicatorView = {
+    public lazy var loadingIndicatorView: UIActivityIndicatorView = {
         //
         let activityIndicatorView = UIActivityIndicatorView()
         //
@@ -69,6 +78,14 @@ public class RKWebViewController: UIViewController {
         return refresh
     }()
     
+    public lazy var stopBarButtonItem: UIBarButtonItem = {
+        //
+        let stop = UIBarButtonItem(barButtonSystemItem: .Refresh,
+                                   target: self,
+                                   action: #selector(onStopBarButtonItemClicked(_:)))
+        return stop
+    }()
+    
     public lazy var actionBarButtonItem: UIBarButtonItem = {
         //
         let action = UIBarButtonItem(barButtonSystemItem: .Refresh,
@@ -77,9 +94,25 @@ public class RKWebViewController: UIViewController {
         return action
     }()
     
-    // init
+    public static let BackImage: UIImage = {
+       return UIImage()
+    }()
     
-    public init(url: String) {
+    public static let ForwardImage: UIImage = {
+        return UIImage()
+    }()
+    
+    // init
+    public convenience init(string: String) {
+        self.init(url: NSURL(string: string)!)
+    }
+    
+    public convenience init(url: NSURL) {
+        self.init(request: NSURLRequest(URL: url))
+    }
+    
+    public init(request: NSURLRequest) {
+        self.request = request
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -94,9 +127,24 @@ public class RKWebViewController: UIViewController {
     
     override public func viewDidLoad() {
         super.viewDidLoad()
-
-
-
+        
+        self.webView.loadRequest(NSURLRequest(URL: NSURL(string: "https://www.baidu.com")!))
+        //
+        updateToolBarItems()
+    }
+    
+    public override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        //
+        switch UI_USER_INTERFACE_IDIOM() {
+        case .Phone:
+            navigationController?.setToolbarHidden(hideToolBar, animated: true)
+        case .Pad:
+            navigationController?.setToolbarHidden(true, animated: true)
+        default:
+            break
+        }
+        
     }
     
     public override func viewDidDisappear(animated: Bool) {
@@ -107,9 +155,7 @@ public class RKWebViewController: UIViewController {
     
     deinit {
         //
-        webView.removeObserver(self, forKeyPath: "")
-        //
-        webView.removeObserver(self, forKeyPath: "")
+        removeWebViewObserver()
     }
     
     override public func didReceiveMemoryWarning() {
@@ -122,7 +168,7 @@ public class RKWebViewController: UIViewController {
                                                 change: [String : AnyObject]?,
                                                 context: UnsafeMutablePointer<Void>) {
         //
-        if keyPath == "" {
+        if keyPath == "title" {
             
         } else {
             
@@ -133,60 +179,78 @@ public class RKWebViewController: UIViewController {
 
 public extension RKWebViewController {
    
-    func observeWKWebView() {
+    func observeWebView() {
         //
-        webView.addObserver(self, forKeyPath: "", options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: "title", options: .New, context: nil)
         //
-        webView.addObserver(self, forKeyPath: "", options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: "loading", options: .New, context: nil)
+        //
+        webView.addObserver(self, forKeyPath: "canGoBack", options: .New, context: nil)
+        //
+        webView.addObserver(self, forKeyPath: "estimatedProgress", options: .New, context: nil)
     }
     
-    func buildWebView() -> WKWebView {
-        return WKWebView()
+    func removeWebViewObserver()  {
+        //
+        webView.removeObserver(self, forKeyPath: "title")
+        //
+        webView.removeObserver(self, forKeyPath: "loading")
+        //
+        webView.removeObserver(self, forKeyPath: "canGoBack")
+        //
+        webView.removeObserver(self, forKeyPath: "estimatedProgress")
     }
     
-    //
     func backImage() -> UIImage {
-        return UIImage()
+        //
+        UIGraphicsBeginImageContextWithOptions(CGSize.zero, false, 1)
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndImageContext()
+        
+        return image
     }
     
     func forwardImage() -> UIImage {
-        return UIImage()
+        //
+        UIGraphicsBeginImageContextWithOptions(CGSize.zero, false, 1)
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndImageContext()
+        
+        return image
     }
     
-    func temp() {
-        let top = NSLayoutConstraint(item: webView,
-                                     attribute: .Top,
-                                     relatedBy: .Equal,
-                                     toItem: view,
-                                     attribute: .Top,
-                                     multiplier: 1,
-                                     constant: 0)
-        
-        let left = NSLayoutConstraint(item: webView,
-                                      attribute: .Left,
-                                      relatedBy: .Equal,
-                                      toItem: view,
-                                      attribute: .Left,
-                                      multiplier: 1,
-                                      constant: 0)
-        
-        let bottom = NSLayoutConstraint(item: webView,
-                                        attribute: .Bottom,
-                                        relatedBy: .Equal,
-                                        toItem: view,
-                                        attribute: .Bottom,
-                                        multiplier: 1,
-                                        constant: 0)
-        
-        let right = NSLayoutConstraint(item: webView,
-                                       attribute: .Right,
-                                       relatedBy: .Equal,
-                                       toItem: view,
-                                       attribute: .Right,
-                                       multiplier: 1,
-                                       constant: 0)
-        
-        webView.addConstraints([top, left, bottom, right])
+    func loadRequest(request: NSURLRequest) {
+        webView.loadRequest(request)
+    }
+    
+    func updateToolBarItems() {
+        //
+        let fixedSpace = UIBarButtonItem(barButtonSystemItem: .FixedSpace,
+                                         target: nil,
+                                         action: nil)
+        //
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace,
+                                            target: nil,
+                                            action: nil)
+        //
+        let items = [
+            fixedSpace,
+            backBarButtonItem,
+            flexibleSpace,
+            forwardBarButtonItem,
+            flexibleSpace,
+            stopBarButtonItem,
+            flexibleSpace,
+            actionBarButtonItem,
+            fixedSpace
+        ]
+        navigationController?.toolbar.barStyle = navigationController?.navigationBar.barStyle ?? .Default
+        navigationController?.toolbar.tintColor = navigationController?.navigationBar.tintColor;
+        setToolbarItems(items, animated: true)
     }
     
 }
@@ -194,19 +258,26 @@ public extension RKWebViewController {
 public extension RKWebViewController {
     //
     func onBackBarButtonItemClicked(sender: UIBarButtonItem) {
-        
+        webView.goBack()
     }
     
     func onForwardBarButtonItemClicked(sender: UIBarButtonItem) {
-        
+        webView.goForward()
     }
 
     func onRefreshBarButtonItemClicked(sender: UIBarButtonItem) {
-        
+        webView.reload()
+    }
+    
+    func onStopBarButtonItemClicked(sender: UIBarButtonItem) {
+        //
+        webView.stopLoading()
+        //
+        updateToolBarItems()
     }
     
     func onActionBarButtonItemClicked(sender: UIBarButtonItem) {
-        
+        //
     }
 }
 
@@ -220,6 +291,7 @@ extension RKWebViewController: WKUIDelegate {
 
 extension RKWebViewController: WKScriptMessageHandler {
     
+    // js post message to native
     public func userContentController(userContentController: WKUserContentController,
                                       didReceiveScriptMessage message: WKScriptMessage) {
         //
