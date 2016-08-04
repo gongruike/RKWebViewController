@@ -16,14 +16,23 @@ private let WKWebViewProgressKeyPath        = ""
 
 public class RKWebViewController: UIViewController {
 
-    private struct Keys {
-        static let a = ""
+    private struct KeyPath {
+        //
+        static let Title = "title"
+        //
+        static let Loading = "loading"
+        //
+        static let CanGoBack = "canGoBack"
+        //
+        static let CanGoForward = "canGoForward"
+        //
+        static let EstimatedProgress = "estimatedProgress"
     }
     
     public var request: NSURLRequest
     
     public var webViewConfiguration: WKWebViewConfiguration?
-    // Only Effect On iPhone. Default is false
+    //
     public var hideToolBar: Bool = false
     
     public lazy var webView: WKWebView! = {
@@ -128,9 +137,12 @@ public class RKWebViewController: UIViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
         
-        self.webView.loadRequest(NSURLRequest(URL: NSURL(string: "https://www.baidu.com")!))
         //
         updateToolBarItems()
+        //
+        observeWebView()
+        //
+        loadRequest(NSURLRequest(URL: NSURL(string: "https://www.baidu.com")!))
     }
     
     public override func viewWillAppear(animated: Bool) {
@@ -144,7 +156,6 @@ public class RKWebViewController: UIViewController {
         default:
             break
         }
-        
     }
     
     public override func viewDidDisappear(animated: Bool) {
@@ -181,24 +192,28 @@ public extension RKWebViewController {
    
     func observeWebView() {
         //
-        webView.addObserver(self, forKeyPath: "title", options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.Title, options: .New, context: nil)
         //
-        webView.addObserver(self, forKeyPath: "loading", options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.Loading, options: .New, context: nil)
         //
-        webView.addObserver(self, forKeyPath: "canGoBack", options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.CanGoBack, options: .New, context: nil)
         //
-        webView.addObserver(self, forKeyPath: "estimatedProgress", options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.CanGoForward, options: .New, context: nil)
+        //
+        webView.addObserver(self, forKeyPath: KeyPath.EstimatedProgress, options: .New, context: nil)
     }
     
     func removeWebViewObserver()  {
         //
-        webView.removeObserver(self, forKeyPath: "title")
+        webView.removeObserver(self, forKeyPath: KeyPath.Title)
         //
-        webView.removeObserver(self, forKeyPath: "loading")
+        webView.removeObserver(self, forKeyPath: KeyPath.Loading)
         //
-        webView.removeObserver(self, forKeyPath: "canGoBack")
+        webView.removeObserver(self, forKeyPath: KeyPath.CanGoBack)
         //
-        webView.removeObserver(self, forKeyPath: "estimatedProgress")
+        webView.removeObserver(self, forKeyPath: KeyPath.CanGoForward)
+        //
+        webView.removeObserver(self, forKeyPath: KeyPath.EstimatedProgress)
     }
     
     func backImage() -> UIImage {
