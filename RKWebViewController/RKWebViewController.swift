@@ -18,15 +18,15 @@ public class RKWebViewController: UIViewController {
 
     private struct KeyPath {
         //
-        static let Title = "title"
+        static let Title                = "title"
         //
-        static let Loading = "loading"
+        static let Loading              = "loading"
         //
-        static let CanGoBack = "canGoBack"
+        static let CanGoBack            = "canGoBack"
         //
-        static let CanGoForward = "canGoForward"
+        static let CanGoForward         = "canGoForward"
         //
-        static let EstimatedProgress = "estimatedProgress"
+        static let EstimatedProgress    = "estimatedProgress"
     }
     
     public var request: NSURLRequest
@@ -39,7 +39,7 @@ public class RKWebViewController: UIViewController {
         //
         let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
         //
-        let wk = WKWebView(frame: CGRect.zero, configuration: configuration)
+        let wk = WKWebView(frame: UIScreen.mainScreen().bounds, configuration: configuration)
         //
         wk.navigationDelegate = self
         //
@@ -50,9 +50,7 @@ public class RKWebViewController: UIViewController {
     
     public lazy var loadingIndicatorView: UIActivityIndicatorView = {
         //
-        let activityIndicatorView = UIActivityIndicatorView()
-        //
-        activityIndicatorView.activityIndicatorViewStyle = .WhiteLarge
+        let activityIndicatorView = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
         //
         activityIndicatorView.hidesWhenStopped = true
         //
@@ -65,7 +63,7 @@ public class RKWebViewController: UIViewController {
     
     public lazy var backBarButtonItem: UIBarButtonItem = {
        //
-        let back = UIBarButtonItem(barButtonSystemItem: .Done,
+        let back = UIBarButtonItem(barButtonSystemItem: .Cancel,
                                    target: self,
                                    action: #selector(onBackBarButtonItemClicked(_:)))
         return back
@@ -73,7 +71,7 @@ public class RKWebViewController: UIViewController {
     
     public lazy var forwardBarButtonItem: UIBarButtonItem = {
         //
-        let forward = UIBarButtonItem(barButtonSystemItem: .Refresh,
+        let forward = UIBarButtonItem(barButtonSystemItem: .Play,
                                       target: self,
                                       action: #selector(onForwardBarButtonItemClicked(_:)))
         return forward
@@ -89,7 +87,7 @@ public class RKWebViewController: UIViewController {
     
     public lazy var stopBarButtonItem: UIBarButtonItem = {
         //
-        let stop = UIBarButtonItem(barButtonSystemItem: .Refresh,
+        let stop = UIBarButtonItem(barButtonSystemItem: .Stop,
                                    target: self,
                                    action: #selector(onStopBarButtonItemClicked(_:)))
         return stop
@@ -97,9 +95,9 @@ public class RKWebViewController: UIViewController {
     
     public lazy var actionBarButtonItem: UIBarButtonItem = {
         //
-        let action = UIBarButtonItem(barButtonSystemItem: .Refresh,
+        let action = UIBarButtonItem(barButtonSystemItem: .Action,
                                      target: self,
-                                     action: #selector(onRefreshBarButtonItemClicked(_:)))
+                                     action: #selector(onActionBarButtonItemClicked(_:)))
         return action
     }()
     
@@ -158,6 +156,12 @@ public class RKWebViewController: UIViewController {
         }
     }
     
+    public override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        navigationController?.setToolbarHidden(true, animated: false)
+    }
+    
     public override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(animated)
         
@@ -172,6 +176,8 @@ public class RKWebViewController: UIViewController {
     override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+        //
+        webView.stopLoading()
     }
 
     public override func observeValueForKeyPath(keyPath: String?,
@@ -179,9 +185,20 @@ public class RKWebViewController: UIViewController {
                                                 change: [String : AnyObject]?,
                                                 context: UnsafeMutablePointer<Void>) {
         //
-        if keyPath == "title" {
-            
-        } else {
+        if keyPath == KeyPath.Title {
+            //
+            onTitleChange(change)
+            //
+        } else if keyPath == KeyPath.Loading {
+            //
+            onLoadingChange(change)
+            updateToolBarItems()
+            //
+        } else if keyPath == KeyPath.CanGoBack || keyPath == KeyPath.CanGoForward {
+            //
+            updateToolBarItems()
+            //
+        } else if keyPath == KeyPath.EstimatedProgress {
             
         }
     }
@@ -243,6 +260,13 @@ public extension RKWebViewController {
     }
     
     func updateToolBarItems() {
+        
+        backBarButtonItem.enabled = webView.canGoBack
+        //
+        forwardBarButtonItem.enabled = webView.canGoForward
+        
+        let refreshStopBarButtonItem = webView.loading ? stopBarButtonItem : refreshBarButtonItem
+        
         //
         let fixedSpace = UIBarButtonItem(barButtonSystemItem: .FixedSpace,
                                          target: nil,
@@ -258,7 +282,7 @@ public extension RKWebViewController {
             flexibleSpace,
             forwardBarButtonItem,
             flexibleSpace,
-            stopBarButtonItem,
+            refreshStopBarButtonItem,
             flexibleSpace,
             actionBarButtonItem,
             fixedSpace
@@ -266,6 +290,24 @@ public extension RKWebViewController {
         navigationController?.toolbar.barStyle = navigationController?.navigationBar.barStyle ?? .Default
         navigationController?.toolbar.tintColor = navigationController?.navigationBar.tintColor;
         setToolbarItems(items, animated: true)
+    }
+    
+}
+
+public extension RKWebViewController {
+    
+    func onTitleChange(change: [String : AnyObject]?) {
+        //
+        title = change?[NSKeyValueChangeNewKey] as? String
+    }
+    
+    func onLoadingChange(change: [String : AnyObject]?) {
+        //
+        if webView.loading {
+            loadingIndicatorView.startAnimating()
+        } else {
+            loadingIndicatorView.stopAnimating()
+        }
     }
     
 }
