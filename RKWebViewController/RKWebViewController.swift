@@ -9,11 +9,6 @@
 import UIKit
 import WebKit
 
-private let WKWebViewTitleKeyPath           = ""
-private let WKWebViewCanGoBackKeyPath       = ""
-private let WKWebViewLoadingKeyPath         = ""
-private let WKWebViewProgressKeyPath        = ""
-
 public class RKWebViewController: UIViewController {
 
     private struct KeyPath {
@@ -110,16 +105,19 @@ public class RKWebViewController: UIViewController {
     }()
     
     // init
-    public convenience init(string: String) {
+    public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
         self.init(url: NSURL(string: string)!)
     }
     
-    public convenience init(url: NSURL) {
+    public convenience init(url: NSURL, webViewConfiguration: WKWebViewConfiguration? = nil) {
         self.init(request: NSURLRequest(URL: url))
     }
     
-    public init(request: NSURLRequest) {
+    public init(request: NSURLRequest, webViewConfiguration: WKWebViewConfiguration? = nil) {
+        //
         self.request = request
+        self.webViewConfiguration = webViewConfiguration
+        //
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -134,7 +132,6 @@ public class RKWebViewController: UIViewController {
     
     override public func viewDidLoad() {
         super.viewDidLoad()
-        
         //
         updateToolBarItems()
         //
@@ -142,6 +139,7 @@ public class RKWebViewController: UIViewController {
         //
         loadRequest(NSURLRequest(URL: NSURL(string: "https://www.baidu.com")!))
     }
+
     
     public override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
@@ -159,7 +157,9 @@ public class RKWebViewController: UIViewController {
     public override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         
-        navigationController?.setToolbarHidden(true, animated: false)
+        if UI_USER_INTERFACE_IDIOM() == .Phone {
+            navigationController?.setToolbarHidden(true, animated: false)
+        }
     }
     
     public override func viewDidDisappear(animated: Bool) {
@@ -199,7 +199,7 @@ public class RKWebViewController: UIViewController {
             updateToolBarItems()
             //
         } else if keyPath == KeyPath.EstimatedProgress {
-            
+            //
         }
     }
     
@@ -233,34 +233,31 @@ public extension RKWebViewController {
         webView.removeObserver(self, forKeyPath: KeyPath.EstimatedProgress)
     }
     
-    func backImage() -> UIImage {
+    
+    func onTitleChange(change: [String : AnyObject]?) {
         //
-        UIGraphicsBeginImageContextWithOptions(CGSize.zero, false, 1)
-        
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        
-        UIGraphicsEndImageContext()
-        
-        return image
+        title = change?[NSKeyValueChangeNewKey] as? String
     }
     
-    func forwardImage() -> UIImage {
+    func onLoadingChange(change: [String : AnyObject]?) {
         //
-        UIGraphicsBeginImageContextWithOptions(CGSize.zero, false, 1)
-        
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        
-        UIGraphicsEndImageContext()
-        
-        return image
+        if webView.loading {
+            loadingIndicatorView.startAnimating()
+        } else {
+            loadingIndicatorView.stopAnimating()
+        }
     }
+    
+}
+
+public extension RKWebViewController {
     
     func loadRequest(request: NSURLRequest) {
         webView.loadRequest(request)
     }
     
     func updateToolBarItems() {
-        
+        //
         backBarButtonItem.enabled = webView.canGoBack
         //
         forwardBarButtonItem.enabled = webView.canGoForward
@@ -291,25 +288,6 @@ public extension RKWebViewController {
         navigationController?.toolbar.tintColor = navigationController?.navigationBar.tintColor;
         setToolbarItems(items, animated: true)
     }
-    
-}
-
-public extension RKWebViewController {
-    
-    func onTitleChange(change: [String : AnyObject]?) {
-        //
-        title = change?[NSKeyValueChangeNewKey] as? String
-    }
-    
-    func onLoadingChange(change: [String : AnyObject]?) {
-        //
-        if webView.loading {
-            loadingIndicatorView.startAnimating()
-        } else {
-            loadingIndicatorView.stopAnimating()
-        }
-    }
-    
 }
 
 public extension RKWebViewController {
