@@ -25,9 +25,8 @@ class ViewController: UIViewController {
 
     @IBAction func onPushBtnClicked(sender: UIButton) {
         
-        let webViewController = RKWebViewController(string: "")
+        let webViewController = RKWebViewController(string: "https://www.baidu.com")
         showViewController(webViewController, sender: nil)
-//        navigationController?.pushViewController(webViewController, animated: true)
     }
 
 }
