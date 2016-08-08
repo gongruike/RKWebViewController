@@ -20,8 +20,6 @@ public class RKWebViewController: UIViewController {
         static let CanGoBack            = "canGoBack"
         //
         static let CanGoForward         = "canGoForward"
-        //
-        static let EstimatedProgress    = "estimatedProgress"
     }
     
     public var backImage: UIImage?
@@ -39,8 +37,6 @@ public class RKWebViewController: UIViewController {
     public lazy var webView: WKWebView! = {
         //
         let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
-        //
-        configuration.userContentController.addScriptMessageHandler(self, name: "")
         //
         let wk = WKWebView(frame: UIScreen.mainScreen().bounds, configuration: configuration)
         //
@@ -154,10 +150,12 @@ public class RKWebViewController: UIViewController {
     
     // init
     public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
+        //
         self.init(url: NSURL(string: string)!, webViewConfiguration: webViewConfiguration)
     }
     
     public convenience init(url: NSURL, webViewConfiguration: WKWebViewConfiguration? = nil) {
+        //
         self.init(request: NSURLRequest(URL: url), webViewConfiguration: webViewConfiguration)
     }
     
@@ -176,18 +174,17 @@ public class RKWebViewController: UIViewController {
     override public func loadView() {
         //
         self.view = self.webView
+        //
+        addWebViewObserver()
+        //
+        loadRequest(request)
     }
     
     override public func viewDidLoad() {
         super.viewDidLoad()
         //
         updateToolBarItems()
-        //
-        addWebViewObserver()
-        //
-        loadRequest(request)
     }
-
     
     public override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
@@ -250,8 +247,6 @@ public class RKWebViewController: UIViewController {
             //
             updateToolBarItems()
             //
-        } else if keyPath == KeyPath.EstimatedProgress {
-            //
         }
     }
     
@@ -268,8 +263,6 @@ public extension RKWebViewController {
         webView.addObserver(self, forKeyPath: KeyPath.CanGoBack, options: .New, context: nil)
         //
         webView.addObserver(self, forKeyPath: KeyPath.CanGoForward, options: .New, context: nil)
-        //
-        webView.addObserver(self, forKeyPath: KeyPath.EstimatedProgress, options: .New, context: nil)
     }
     
     func removeWebViewObserver()  {
@@ -281,8 +274,6 @@ public extension RKWebViewController {
         webView.removeObserver(self, forKeyPath: KeyPath.CanGoBack)
         //
         webView.removeObserver(self, forKeyPath: KeyPath.CanGoForward)
-        //
-        webView.removeObserver(self, forKeyPath: KeyPath.EstimatedProgress)
     }
     
     
@@ -318,16 +309,11 @@ public extension RKWebViewController {
         //
         let refreshStopBarButtonItem = webView.loading ? stopBarButtonItem : refreshBarButtonItem
         //
-        let fixedSpace = UIBarButtonItem(barButtonSystemItem: .FixedSpace,
-                                         target: nil,
-                                         action: nil)
-        //
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace,
                                             target: nil,
                                             action: nil)
         //
         let items = [
-            fixedSpace,
             backBarButtonItem,
             flexibleSpace,
             forwardBarButtonItem,
@@ -335,7 +321,6 @@ public extension RKWebViewController {
             refreshStopBarButtonItem,
             flexibleSpace,
             actionBarButtonItem,
-            fixedSpace
         ]
         navigationController?.toolbar.barStyle = navigationController?.navigationBar.barStyle ?? .Default
         navigationController?.toolbar.tintColor = navigationController?.navigationBar.tintColor;
@@ -366,6 +351,7 @@ public extension RKWebViewController {
     
     func onActionBarButtonItemClicked(sender: UIBarButtonItem) {
         //
+        webView.evaluateJavaScript("var confirmed = confirm('OK?');", completionHandler: nil)
     }
 }
 
@@ -375,6 +361,75 @@ extension RKWebViewController: WKNavigationDelegate {
 
 extension RKWebViewController: WKUIDelegate {
     
+    //
+    public func webView(webView: WKWebView,
+                        runJavaScriptAlertPanelWithMessage message: String,
+                        initiatedByFrame frame: WKFrameInfo,
+                        completionHandler: () -> Void) {
+        //
+        let action = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Default) { action in
+            //
+            completionHandler()
+        }
+        //
+        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .Alert)
+        //
+        alertController.addAction(action)
+        //
+        presentViewController(alertController, animated: true, completion: nil)
+    }
+    
+    
+    public func webView(webView: WKWebView,
+                        runJavaScriptConfirmPanelWithMessage message: String,
+                        initiatedByFrame frame: WKFrameInfo,
+                        completionHandler: (Bool) -> Void) {
+        //
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Destructive) { action in
+            completionHandler(true)
+        }
+        //
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Default) { action in
+            //
+            completionHandler(false)
+        }
+
+        //
+        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .Alert)
+        //
+        alertController.addAction(okAction)
+        alertController.addAction(cancelAction)
+        //
+        presentViewController(alertController, animated: true, completion: nil)
+    }
+    
+    public func webView(webView: WKWebView,
+                        runJavaScriptTextInputPanelWithPrompt prompt: String,
+                        defaultText: String?,
+                        initiatedByFrame frame: WKFrameInfo,
+                        completionHandler: (String?) -> Void) {
+        //
+        let alertController = UIAlertController(title: webView.title, message: prompt, preferredStyle: .Alert)
+        //
+        alertController.addTextFieldWithConfigurationHandler { textField in
+            textField.text = defaultText
+        }
+        //
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Destructive) { action in
+            completionHandler(alertController.textFields?.first?.text)
+        }
+        //
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Default) { action in
+            //
+            completionHandler(nil)
+        }
+        //
+        alertController.addAction(okAction)
+        alertController.addAction(cancelAction)
+        //
+        presentViewController(alertController, animated: true, completion: nil)
+        
+    }
 }
 
 extension RKWebViewController: WKScriptMessageHandler {
