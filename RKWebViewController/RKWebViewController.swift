@@ -22,10 +22,6 @@ public class RKWebViewController: UIViewController {
         static let CanGoForward         = "canGoForward"
     }
     
-    public var backImage: UIImage?
-    
-    public var forwardImage: UIImage?
-    
     public var request: NSURLRequest
     
     public var webViewConfiguration: WKWebViewConfiguration?
@@ -62,7 +58,7 @@ public class RKWebViewController: UIViewController {
     
     public lazy var backBarButtonItem: UIBarButtonItem = {
         //
-        let image = self.backImage ?? RKWebViewController.BackImage
+        let image = RKWebViewController.BackImage
         //
         let back = UIBarButtonItem(image: image,
                                    style: .Plain,
@@ -73,7 +69,7 @@ public class RKWebViewController: UIViewController {
     
     public lazy var forwardBarButtonItem: UIBarButtonItem = {
         //
-        let image = self.forwardImage ?? RKWebViewController.ForwardImage
+        let image = RKWebViewController.ForwardImage
         //
         let forward = UIBarButtonItem(image: image,
                                       style: .Plain,
@@ -96,14 +92,6 @@ public class RKWebViewController: UIViewController {
                                    target: self,
                                    action: #selector(onStopBarButtonItemClicked(_:)))
         return stop
-    }()
-    
-    public lazy var actionBarButtonItem: UIBarButtonItem = {
-        //
-        let action = UIBarButtonItem(barButtonSystemItem: .Action,
-                                     target: self,
-                                     action: #selector(onActionBarButtonItemClicked(_:)))
-        return action
     }()
     
     public static let BackImage: UIImage = {
@@ -189,24 +177,13 @@ public class RKWebViewController: UIViewController {
     public override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         //
-        switch UI_USER_INTERFACE_IDIOM() {
-        case .Phone:
-            navigationController?.setToolbarHidden(false, animated: true)
-        case .Pad:
-            navigationController?.setToolbarHidden(true, animated: true)
-        default:
-            break
-        }
+        navigationController?.setToolbarHidden(false, animated: true)
     }
     
     public override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         
-        if UI_USER_INTERFACE_IDIOM() == .Phone {
-            navigationController?.setToolbarHidden(true, animated: false)
-        }
-        
-        webView.stopLoading()
+        navigationController?.setToolbarHidden(true, animated: false)
     }
     
     public override func viewDidDisappear(animated: Bool) {
@@ -216,8 +193,6 @@ public class RKWebViewController: UIViewController {
     }
     
     deinit {
-        //
-        webView.stopLoading()
         //
         removeWebViewObserver()
     }
@@ -314,14 +289,15 @@ public extension RKWebViewController {
                                             action: nil)
         //
         let items = [
+            flexibleSpace,
             backBarButtonItem,
             flexibleSpace,
             forwardBarButtonItem,
             flexibleSpace,
             refreshStopBarButtonItem,
-            flexibleSpace,
-            actionBarButtonItem,
+            flexibleSpace
         ]
+        //
         navigationController?.toolbar.barStyle = navigationController?.navigationBar.barStyle ?? .Default
         navigationController?.toolbar.tintColor = navigationController?.navigationBar.tintColor;
         setToolbarItems(items, animated: true)
@@ -348,15 +324,10 @@ public extension RKWebViewController {
         //
         updateToolBarItems()
     }
-    
-    func onActionBarButtonItemClicked(sender: UIBarButtonItem) {
-        //
-        webView.evaluateJavaScript("var confirmed = confirm('OK?');", completionHandler: nil)
-    }
 }
 
 extension RKWebViewController: WKNavigationDelegate {
-    
+    //
 }
 
 extension RKWebViewController: WKUIDelegate {
@@ -430,15 +401,5 @@ extension RKWebViewController: WKUIDelegate {
         presentViewController(alertController, animated: true, completion: nil)
         
     }
-}
-
-extension RKWebViewController: WKScriptMessageHandler {
-    
-    // js post message to native
-    public func userContentController(userContentController: WKUserContentController,
-                                      didReceiveScriptMessage message: WKScriptMessage) {
-        //
-    }
-    
 }
 
