@@ -41,6 +41,7 @@ class ViewController: UIViewController {
     @IBAction func onPushBtnClicked(sender: UIButton) {
         
         let webViewController = RKWebViewController(string: "https://www.baidu.com")
+        webViewController.progressViewTintColor = UIColor.greenColor()
         showViewController(webViewController, sender: nil)
     }
 

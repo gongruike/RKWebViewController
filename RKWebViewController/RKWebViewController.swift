@@ -35,45 +35,39 @@ public class RKWebViewController: UIViewController {
         static let CanGoBack            = "canGoBack"
         //
         static let CanGoForward         = "canGoForward"
+        //
+        static let EstimatedProgress    = "estimatedProgress"
     }
     
     public var request: NSURLRequest
     
     public var webViewConfiguration: WKWebViewConfiguration?
+
+    public var webView: WKWebView!
     
-    public var URL: NSURL? {
-        return webView.URL
+    public var progressView: UIProgressView!
+    
+    public var progressViewTintColor: UIColor = UIColor.blueColor() {
+        didSet {
+            //
+            progressView?.progressTintColor = progressViewTintColor
+        }
     }
     
-    public lazy var webView: WKWebView! = {
+    private lazy var progressViewTopLayoutConstraint: NSLayoutConstraint = {
         //
-        let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
-        //
-        let wk = WKWebView(frame: UIScreen.mainScreen().bounds, configuration: configuration)
-        //
-        wk.navigationDelegate = self
-        //
-        wk.UIDelegate = self
-        //
-        return wk
-    }()
-    
-    public lazy var loadingIndicatorView: UIActivityIndicatorView = {
-        //
-        let activityIndicatorView = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
-        //
-        activityIndicatorView.hidesWhenStopped = true
-        //
-        activityIndicatorView.center = self.view.center
-        //
-        self.view.addSubview(activityIndicatorView)
-        //
-        return activityIndicatorView
+        return NSLayoutConstraint(item: self.progressView,
+                                  attribute: .Top,
+                                  relatedBy: .Equal,
+                                  toItem: self.view,
+                                  attribute: .Top,
+                                  multiplier: 1,
+                                  constant: 0)
     }()
     
     public lazy var backBarButtonItem: UIBarButtonItem = {
         //
-        let image = RKWebViewController.BackImage
+        let image = RKWebViewController.BackImage()
         //
         let back = UIBarButtonItem(image: image,
                                    style: .Plain,
@@ -84,7 +78,7 @@ public class RKWebViewController: UIViewController {
     
     public lazy var forwardBarButtonItem: UIBarButtonItem = {
         //
-        let image = RKWebViewController.ForwardImage
+        let image = RKWebViewController.ForwardImage()
         //
         let forward = UIBarButtonItem(image: image,
                                       style: .Plain,
@@ -108,49 +102,7 @@ public class RKWebViewController: UIViewController {
                                    action: #selector(onStopBarButtonItemClicked(_:)))
         return stop
     }()
-    
-    public static let BackImage: UIImage = {
-        //
-        UIGraphicsBeginImageContextWithOptions(CGSizeMake(12, 21), false, 0)
-        
-        let path = UIBezierPath()
-        path.lineWidth = 2
-        path.lineCapStyle = .Round
-        path.lineJoinStyle = .Miter
-        
-        path.moveToPoint(CGPointMake(11, 1))
-        path.addLineToPoint(CGPointMake(1, 11))
-        path.addLineToPoint(CGPointMake(11, 20))
-        path.stroke()
-        
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        
-        UIGraphicsEndImageContext()
-        //
-        return image
-    }()
-    
-    public static let ForwardImage: UIImage = {
-        //
-        UIGraphicsBeginImageContextWithOptions(CGSizeMake(12, 21), false, 0)
-        
-        let path = UIBezierPath()
-        path.lineWidth = 2
-        path.lineCapStyle = .Round
-        path.lineJoinStyle = .Miter
-        
-        path.moveToPoint(CGPointMake(1, 1))
-        path.addLineToPoint(CGPointMake(11, 11))
-        path.addLineToPoint(CGPointMake(1, 20))
-        path.stroke()
-        
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        
-        UIGraphicsEndImageContext()
-        //
-        return image
-    }()
-    
+
     // init
     public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
@@ -173,20 +125,35 @@ public class RKWebViewController: UIViewController {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    override public func loadView() {
+
+    override public func viewDidLoad() {
+        super.viewDidLoad()
         //
-        self.view = self.webView
+        let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
+        //
+        webView = WKWebView(frame: CGRect.zero, configuration: configuration)
+        //
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        //
+        webView.UIDelegate = self
+        //
+        view.addSubview(webView)
+        
+        progressView = UIProgressView(progressViewStyle: .Default)
+        //
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        //
+        progressView.progressTintColor = progressViewTintColor
+        //
+        progressView.trackTintColor = UIColor.clearColor()
+        //
+        view.addSubview(progressView)
+        
+        addLayoutConstraints()
         //
         addWebViewObserver()
         //
         loadRequest(request)
-    }
-    
-    override public func viewDidLoad() {
-        super.viewDidLoad()
-        //
-        updateToolBarItems()
     }
     
     public override func viewWillAppear(animated: Bool) {
@@ -215,7 +182,6 @@ public class RKWebViewController: UIViewController {
     override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-        //
         webView.stopLoading()
     }
 
@@ -234,7 +200,55 @@ public class RKWebViewController: UIViewController {
         } else if keyPath == KeyPath.CanGoBack || keyPath == KeyPath.CanGoForward {
             //
             updateToolBarItems()
+        } else if keyPath == KeyPath.EstimatedProgress {
+            //
+            onEstimatedProgressChange(change)
         }
+    }
+    
+    public override func viewWillTransitionToSize(size: CGSize,
+                                                  withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+        //
+        onViewWillTransitionToSize(size)
+    }
+    
+    func addLayoutConstraints() {
+        //
+        let webViewLayoutConstraints = [
+            NSLayoutConstraint(item: webView, attribute: .Top, relatedBy: .Equal, toItem: view, attribute: .Top, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: webView, attribute: .Left, relatedBy: .Equal, toItem: view, attribute: .Left, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: webView, attribute: .Bottom, relatedBy: .Equal, toItem: view, attribute: .Bottom, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: webView, attribute: .Right, relatedBy: .Equal, toItem: view, attribute: .Right, multiplier: 1, constant: 0)
+        ]
+        NSLayoutConstraint.activateConstraints(webViewLayoutConstraints)
+        //
+        updateProgressViewTopLayoutConstraint(view.bounds.size)
+        let progressViewLayoutConstraints = [
+            progressViewTopLayoutConstraint,
+            NSLayoutConstraint(item: progressView, attribute: .Left, relatedBy: .Equal, toItem: view, attribute: .Left, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: progressView, attribute: .Width, relatedBy: .Equal, toItem: view, attribute: .Width, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: progressView, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 2)
+        ]
+        NSLayoutConstraint.activateConstraints(progressViewLayoutConstraints)
+    }
+    
+    func updateProgressViewTopLayoutConstraint(size: CGSize) {
+        // Portrait Landscape
+        var navigationBarHeight: CGFloat = navigationController?.navigationBar.bounds.height ?? 0
+        if size.width < size.height {
+            // StatusBar Height
+            navigationBarHeight += 20
+        }
+        
+        progressViewTopLayoutConstraint.constant = navigationBarHeight
+    }
+    
+    func onViewWillTransitionToSize(size: CGSize) {
+        //
+        updateProgressViewTopLayoutConstraint(size)
+        //
+        view.setNeedsUpdateConstraints()
     }
     
 }
@@ -250,9 +264,11 @@ public extension RKWebViewController {
         webView.addObserver(self, forKeyPath: KeyPath.CanGoBack, options: .New, context: nil)
         //
         webView.addObserver(self, forKeyPath: KeyPath.CanGoForward, options: .New, context: nil)
+        //
+        webView.addObserver(self, forKeyPath: KeyPath.EstimatedProgress, options: .New, context: nil)
     }
     
-    func removeWebViewObserver()  {
+    func removeWebViewObserver() {
         //
         webView.removeObserver(self, forKeyPath: KeyPath.Title)
         //
@@ -261,8 +277,9 @@ public extension RKWebViewController {
         webView.removeObserver(self, forKeyPath: KeyPath.CanGoBack)
         //
         webView.removeObserver(self, forKeyPath: KeyPath.CanGoForward)
+        //
+        webView.removeObserver(self, forKeyPath: KeyPath.EstimatedProgress)
     }
-    
     
     func onTitleChange(change: [String : AnyObject]?) {
         //
@@ -273,10 +290,14 @@ public extension RKWebViewController {
         //
         UIApplication.sharedApplication().networkActivityIndicatorVisible = webView.loading
         //
-        if webView.loading {
-            loadingIndicatorView.startAnimating()
-        } else {
-            loadingIndicatorView.stopAnimating()
+        progressView.hidden = !webView.loading
+    }
+    
+    func onEstimatedProgressChange(change: [String : AnyObject]?) {
+        //
+        if let progress = change?[NSKeyValueChangeNewKey] as? Float {
+            //
+            progressView.progress = progress
         }
     }
     
@@ -284,7 +305,10 @@ public extension RKWebViewController {
 
 public extension RKWebViewController {
     
-    func loadRequest(request: NSURLRequest) {
+    public func loadRequest(request: NSURLRequest) {
+        //
+        self.request = request
+        //
         webView.loadRequest(request)
     }
     
@@ -317,7 +341,7 @@ public extension RKWebViewController {
 }
 
 public extension RKWebViewController {
-    //
+    
     func onBackBarButtonItemClicked(sender: UIBarButtonItem) {
         webView.goBack()
     }
@@ -333,17 +357,11 @@ public extension RKWebViewController {
     func onStopBarButtonItemClicked(sender: UIBarButtonItem) {
         //
         webView.stopLoading()
-        //
-        updateToolBarItems()
     }
-}
-
-extension RKWebViewController: WKNavigationDelegate {
-    //
+    
 }
 
 extension RKWebViewController: WKUIDelegate {
-    
     //
     public func webView(webView: WKWebView,
                         runJavaScriptAlertPanelWithMessage message: String,
@@ -361,7 +379,6 @@ extension RKWebViewController: WKUIDelegate {
         //
         presentViewController(alertController, animated: true, completion: nil)
     }
-    
     
     public func webView(webView: WKWebView,
                         runJavaScriptConfirmPanelWithMessage message: String,
@@ -411,7 +428,53 @@ extension RKWebViewController: WKUIDelegate {
         alertController.addAction(cancelAction)
         //
         presentViewController(alertController, animated: true, completion: nil)
-        
     }
+    
+}
+
+public extension RKWebViewController {
+    
+    public static func BackImage() -> UIImage {
+        //
+        UIGraphicsBeginImageContextWithOptions(CGSizeMake(12, 21), false, 0)
+        
+        let path = UIBezierPath()
+        path.lineWidth = 2
+        path.lineCapStyle = .Round
+        path.lineJoinStyle = .Miter
+        
+        path.moveToPoint(CGPointMake(11, 1))
+        path.addLineToPoint(CGPointMake(1, 11))
+        path.addLineToPoint(CGPointMake(11, 20))
+        path.stroke()
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndImageContext()
+        //
+        return image
+    }
+    
+    public static func ForwardImage() -> UIImage {
+        //
+        UIGraphicsBeginImageContextWithOptions(CGSizeMake(12, 21), false, 0)
+        
+        let path = UIBezierPath()
+        path.lineWidth = 2
+        path.lineCapStyle = .Round
+        path.lineJoinStyle = .Miter
+        
+        path.moveToPoint(CGPointMake(1, 1))
+        path.addLineToPoint(CGPointMake(11, 11))
+        path.addLineToPoint(CGPointMake(1, 20))
+        path.stroke()
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        
+        UIGraphicsEndImageContext()
+        //
+        return image
+    }
+    
 }
 
