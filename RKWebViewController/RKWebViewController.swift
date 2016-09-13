@@ -43,14 +43,36 @@ public class RKWebViewController: UIViewController {
     
     public var webViewConfiguration: WKWebViewConfiguration?
 
-    public var webView: WKWebView!
+    public lazy var webView: WKWebView! = {
+        //
+        let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
+        //
+        let wk = WKWebView(frame: CGRect.zero, configuration: configuration)
+        //
+        wk.translatesAutoresizingMaskIntoConstraints = false
+        //
+        wk.UIDelegate = self
+        //
+        return wk
+    }()
     
-    public var progressView: UIProgressView!
+    public lazy var progressView: UIProgressView! = {
+        //
+        let pv = UIProgressView(progressViewStyle: .Default)
+        //
+        pv.translatesAutoresizingMaskIntoConstraints = false
+        //
+        pv.progressTintColor = self.progressViewTintColor
+        //
+        pv.trackTintColor = UIColor.clearColor()
+        //
+        return pv
+    }()
     
     public var progressViewTintColor: UIColor = UIColor.blueColor() {
         didSet {
             //
-            progressView?.progressTintColor = progressViewTintColor
+            progressView.progressTintColor = progressViewTintColor
         }
     }
     
@@ -103,7 +125,7 @@ public class RKWebViewController: UIViewController {
         return stop
     }()
 
-    // init
+    /// MARK: init
     public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
         self.init(url: NSURL(string: string)!, webViewConfiguration: webViewConfiguration)
@@ -129,26 +151,10 @@ public class RKWebViewController: UIViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
         //
-        let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
-        //
-        webView = WKWebView(frame: CGRect.zero, configuration: configuration)
-        //
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        //
-        webView.UIDelegate = self
-        //
         view.addSubview(webView)
-        
-        progressView = UIProgressView(progressViewStyle: .Default)
-        //
-        progressView.translatesAutoresizingMaskIntoConstraints = false
-        //
-        progressView.progressTintColor = progressViewTintColor
-        //
-        progressView.trackTintColor = UIColor.clearColor()
         //
         view.addSubview(progressView)
-        
+        //
         addLayoutConstraints()
         //
         addWebViewObserver()
@@ -213,6 +219,15 @@ public class RKWebViewController: UIViewController {
         onViewWillTransitionToSize(size)
     }
     
+    /// MARK: Public Methods
+    public func loadRequest(request: NSURLRequest) {
+        //
+        self.request = request
+        //
+        webView.loadRequest(request)
+    }
+    
+    /// MARK: Layout
     func addLayoutConstraints() {
         //
         let webViewLayoutConstraints = [
@@ -251,10 +266,7 @@ public class RKWebViewController: UIViewController {
         view.setNeedsUpdateConstraints()
     }
     
-}
-
-public extension RKWebViewController {
-   
+    /// MARK: Key-Value Observe
     func addWebViewObserver() {
         //
         webView.addObserver(self, forKeyPath: KeyPath.Title, options: .New, context: nil)
@@ -301,17 +313,7 @@ public extension RKWebViewController {
         }
     }
     
-}
-
-public extension RKWebViewController {
-    
-    public func loadRequest(request: NSURLRequest) {
-        //
-        self.request = request
-        //
-        webView.loadRequest(request)
-    }
-    
+    /// MARK: Back，Forward, Refresh, Stop
     func updateToolBarItems() {
         //
         backBarButtonItem.enabled = webView.canGoBack
@@ -338,18 +340,17 @@ public extension RKWebViewController {
         navigationController?.toolbar.tintColor = navigationController?.navigationBar.tintColor;
         setToolbarItems(items, animated: true)
     }
-}
-
-public extension RKWebViewController {
     
     func onBackBarButtonItemClicked(sender: UIBarButtonItem) {
+        
+        progressViewTintColor = UIColor.brownColor()
         webView.goBack()
     }
     
     func onForwardBarButtonItemClicked(sender: UIBarButtonItem) {
         webView.goForward()
     }
-
+    
     func onRefreshBarButtonItemClicked(sender: UIBarButtonItem) {
         webView.reload()
     }
