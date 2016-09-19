@@ -170,13 +170,13 @@ public class RKWebViewController: UIViewController {
     
     public override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
-        
+        //
         navigationController?.setToolbarHidden(true, animated: false)
     }
     
     public override func viewDidDisappear(animated: Bool) {
         super.viewDidDisappear(animated)
-        
+        //
         UIApplication.sharedApplication().networkActivityIndicatorVisible = false
     }
     
@@ -195,7 +195,6 @@ public class RKWebViewController: UIViewController {
                                                 ofObject object: AnyObject?,
                                                 change: [String : AnyObject]?,
                                                 context: UnsafeMutablePointer<Void>) {
-        //
         if keyPath == KeyPath.Title {
             //
             onTitleChange(change)
@@ -253,7 +252,7 @@ public class RKWebViewController: UIViewController {
         var navigationBarHeight: CGFloat = navigationController?.navigationBar.bounds.height ?? 0
         if size.width < size.height {
             // StatusBar Height
-            navigationBarHeight += 20
+            navigationBarHeight += 20//UIApplication.sharedApplication().statusBarFrame.height
         }
         
         progressViewTopLayoutConstraint.constant = navigationBarHeight
@@ -342,8 +341,6 @@ public class RKWebViewController: UIViewController {
     }
     
     func onBackBarButtonItemClicked(sender: UIBarButtonItem) {
-        
-        progressViewTintColor = UIColor.brownColor()
         webView.goBack()
     }
     
@@ -356,7 +353,6 @@ public class RKWebViewController: UIViewController {
     }
     
     func onStopBarButtonItemClicked(sender: UIBarButtonItem) {
-        //
         webView.stopLoading()
     }
     
