@@ -24,9 +24,9 @@
 import UIKit
 import WebKit
 
-open class RKWebViewController: UIViewController, WKUIDelegate {
+open class RKWebViewController: UIViewController {
 
-    fileprivate struct KeyPath {
+    private struct KeyPath {
         //
         static let Title                = "title"
         //
@@ -37,6 +37,10 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
         static let CanGoForward         = "canGoForward"
         //
         static let EstimatedProgress    = "estimatedProgress"
+    }
+    
+    open var currentURL: URL? {
+        return webView.url
     }
     
     open var request: URLRequest
@@ -50,8 +54,6 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
         let wk = WKWebView(frame: CGRect.zero, configuration: configuration)
         //
         wk.translatesAutoresizingMaskIntoConstraints = false
-        //
-        wk.uiDelegate = self
         //
         return wk
     }()
@@ -87,9 +89,10 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
                                   constant: 0)
     }()
     
+    // Toolbar items
     open lazy var backBarButtonItem: UIBarButtonItem = {
         //
-        let image = RKWebViewController.BackImage()
+        let image = self.backImage()
         //
         let back = UIBarButtonItem(image: image,
                                    style: .plain,
@@ -100,7 +103,7 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
     
     open lazy var forwardBarButtonItem: UIBarButtonItem = {
         //
-        let image = RKWebViewController.ForwardImage()
+        let image = self.forwardImage()
         //
         let forward = UIBarButtonItem(image: image,
                                       style: .plain,
@@ -147,6 +150,14 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    ///
+    open func loadRequest(_ request: URLRequest) {
+        //
+        self.request = request
+        //
+        webView.load(request)
+    }
 
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -184,48 +195,16 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
         //
         removeWebViewObserver()
     }
-    
-    override open func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-        webView.stopLoading()
-    }
 
-    open override func observeValue(forKeyPath keyPath: String?,
-                                                of object: Any?,
-                                                change: [NSKeyValueChangeKey : Any]?,
-                                                context: UnsafeMutableRawPointer?) {
-        if keyPath == KeyPath.Title {
-            //
-            onTitleChange(change: change)
-        } else if keyPath == KeyPath.Loading {
-            //
-            onLoadingChange(change: change)
-            updateToolBarItems()
-        } else if keyPath == KeyPath.CanGoBack || keyPath == KeyPath.CanGoForward {
-            //
-            updateToolBarItems()
-        } else if keyPath == KeyPath.EstimatedProgress {
-            //
-            onEstimatedProgressChange(change: change)
-        }
-    }
-    
     open override func viewWillTransition(to size: CGSize,
-                                                  with coordinator: UIViewControllerTransitionCoordinator) {
+                                          with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         //
         onViewWillTransitionToSize(size)
     }
     
-    /// MARK: Public Methods
-    open func loadRequest(_ request: URLRequest) {
-        //
-        self.request = request
-        //
-        webView.load(request)
-    }
-    
+
+    ///
     /// MARK: Layout
     func addLayoutConstraints() {
         //
@@ -249,23 +228,39 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
     
     func updateProgressViewTopLayoutConstraint(_ size: CGSize) {
         // Portrait Landscape
-        var navigationBarHeight: CGFloat = navigationController?.navigationBar.bounds.height ?? 0
-        if size.width < size.height {
-            // StatusBar Height
-            navigationBarHeight += 20
-        }
-        
-        progressViewTopLayoutConstraint.constant = navigationBarHeight
+        // TODO
+        progressViewTopLayoutConstraint.constant = (size.width < size.height) ? 64 : 32
     }
     
     func onViewWillTransitionToSize(_ size: CGSize) {
         //
         updateProgressViewTopLayoutConstraint(size)
         //
-        view.setNeedsUpdateConstraints()
+        view.setNeedsLayout()
     }
     
-    /// MARK: Key-Value Observe
+    ///
+    /// MARK: Key-Value Observing
+    open override func observeValue(forKeyPath keyPath: String?,
+                                    of object: Any?,
+                                    change: [NSKeyValueChangeKey : Any]?,
+                                    context: UnsafeMutableRawPointer?) {
+        if keyPath == KeyPath.Title {
+            //
+            onTitleChange(change: change)
+        } else if keyPath == KeyPath.Loading {
+            //
+            onLoadingChange(change: change)
+            updateToolBarItems()
+        } else if keyPath == KeyPath.CanGoBack || keyPath == KeyPath.CanGoForward {
+            //
+            updateToolBarItems()
+        } else if keyPath == KeyPath.EstimatedProgress {
+            //
+            onEstimatedProgressChange(change: change)
+        }
+    }
+    
     open func addWebViewObserver() {
         //
         webView.addObserver(self, forKeyPath: KeyPath.Title, options: .new, context: nil)
@@ -312,6 +307,8 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
         }
     }
     
+    
+    /// ToolBar
     /// MARK: Back，Forward, Refresh, Stop
     open func updateToolBarItems() {
         //
@@ -356,79 +353,7 @@ open class RKWebViewController: UIViewController, WKUIDelegate {
         webView.stopLoading()
     }
     
-    // WKUIDelegate
-    public func webView(_ webView: WKWebView,
-                        runJavaScriptAlertPanelWithMessage message: String,
-                        initiatedByFrame frame: WKFrameInfo,
-                        completionHandler: @escaping () -> Void) {
-        //
-        let action = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { action in
-            //
-            completionHandler()
-        }
-        //
-        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .alert)
-        //
-        alertController.addAction(action)
-        //
-        present(alertController, animated: true, completion: nil)
-    }
-    
-    public func webView(_ webView: WKWebView,
-                        runJavaScriptConfirmPanelWithMessage message: String,
-                        initiatedByFrame frame: WKFrameInfo,
-                        completionHandler: @escaping (Bool) -> Void) {
-        //
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .destructive) { action in
-            completionHandler(true)
-        }
-        //
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .default) { action in
-            //
-            completionHandler(false)
-        }
-
-        //
-        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .alert)
-        //
-        alertController.addAction(okAction)
-        alertController.addAction(cancelAction)
-        //
-        present(alertController, animated: true, completion: nil)
-    }
-    
-    public func webView(_ webView: WKWebView,
-                        runJavaScriptTextInputPanelWithPrompt prompt: String,
-                        defaultText: String?,
-                        initiatedByFrame frame: WKFrameInfo,
-                        completionHandler: @escaping (String?) -> Void) {
-        //
-        let alertController = UIAlertController(title: webView.title, message: prompt, preferredStyle: .alert)
-        //
-        alertController.addTextField { textField in
-            textField.text = defaultText
-        }
-        //
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .destructive) { action in
-            completionHandler(alertController.textFields?.first?.text)
-        }
-        //
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .default) { action in
-            //
-            completionHandler(nil)
-        }
-        //
-        alertController.addAction(okAction)
-        alertController.addAction(cancelAction)
-        //
-        present(alertController, animated: true, completion: nil)
-    }
-    
-}
-
-public extension RKWebViewController {
-    
-    public static func BackImage() -> UIImage {
+    open func backImage() -> UIImage {
         //
         UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 21), false, 0)
         
@@ -449,7 +374,7 @@ public extension RKWebViewController {
         return image!
     }
     
-    public static func ForwardImage() -> UIImage {
+    open func forwardImage() -> UIImage {
         //
         UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 21), false, 0)
         
@@ -471,4 +396,3 @@ public extension RKWebViewController {
     }
     
 }
-
