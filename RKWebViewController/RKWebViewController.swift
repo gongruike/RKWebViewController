@@ -24,9 +24,9 @@
 import UIKit
 import WebKit
 
-public class RKWebViewController: UIViewController {
+open class RKWebViewController: UIViewController, WKUIDelegate {
 
-    private struct KeyPath {
+    fileprivate struct KeyPath {
         //
         static let Title                = "title"
         //
@@ -39,11 +39,11 @@ public class RKWebViewController: UIViewController {
         static let EstimatedProgress    = "estimatedProgress"
     }
     
-    public var request: NSURLRequest
+    open var request: URLRequest
     
-    public var webViewConfiguration: WKWebViewConfiguration?
+    open var webViewConfiguration: WKWebViewConfiguration?
 
-    public lazy var webView: WKWebView! = {
+    open lazy var webView: WKWebView! = {
         //
         let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
         //
@@ -51,25 +51,25 @@ public class RKWebViewController: UIViewController {
         //
         wk.translatesAutoresizingMaskIntoConstraints = false
         //
-        wk.UIDelegate = self
+        wk.uiDelegate = self
         //
         return wk
     }()
     
-    public lazy var progressView: UIProgressView! = {
+    open lazy var progressView: UIProgressView! = {
         //
-        let pv = UIProgressView(progressViewStyle: .Default)
+        let pv = UIProgressView(progressViewStyle: .default)
         //
         pv.translatesAutoresizingMaskIntoConstraints = false
         //
         pv.progressTintColor = self.progressViewTintColor
         //
-        pv.trackTintColor = UIColor.clearColor()
+        pv.trackTintColor = UIColor.clear
         //
         return pv
     }()
     
-    public var progressViewTintColor: UIColor = UIColor.blueColor() {
+    open var progressViewTintColor: UIColor = UIColor.blue {
         didSet {
             //
             progressView.progressTintColor = progressViewTintColor
@@ -79,47 +79,47 @@ public class RKWebViewController: UIViewController {
     private lazy var progressViewTopLayoutConstraint: NSLayoutConstraint = {
         //
         return NSLayoutConstraint(item: self.progressView,
-                                  attribute: .Top,
-                                  relatedBy: .Equal,
+                                  attribute: .top,
+                                  relatedBy: .equal,
                                   toItem: self.view,
-                                  attribute: .Top,
+                                  attribute: .top,
                                   multiplier: 1,
                                   constant: 0)
     }()
     
-    public lazy var backBarButtonItem: UIBarButtonItem = {
+    open lazy var backBarButtonItem: UIBarButtonItem = {
         //
         let image = RKWebViewController.BackImage()
         //
         let back = UIBarButtonItem(image: image,
-                                   style: .Plain,
+                                   style: .plain,
                                    target: self,
                                    action: #selector(onBackBarButtonItemClicked(_:)))
         return back
     }()
     
-    public lazy var forwardBarButtonItem: UIBarButtonItem = {
+    open lazy var forwardBarButtonItem: UIBarButtonItem = {
         //
         let image = RKWebViewController.ForwardImage()
         //
         let forward = UIBarButtonItem(image: image,
-                                      style: .Plain,
+                                      style: .plain,
                                       target: self,
                                       action: #selector(onForwardBarButtonItemClicked(_:)))
         return forward
     }()
     
-    public lazy var refreshBarButtonItem: UIBarButtonItem = {
+    open lazy var refreshBarButtonItem: UIBarButtonItem = {
         //
-        let refresh = UIBarButtonItem(barButtonSystemItem: .Refresh,
+        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh,
                                       target: self,
                                       action: #selector(onRefreshBarButtonItemClicked(_:)))
         return refresh
     }()
     
-    public lazy var stopBarButtonItem: UIBarButtonItem = {
+    open lazy var stopBarButtonItem: UIBarButtonItem = {
         //
-        let stop = UIBarButtonItem(barButtonSystemItem: .Stop,
+        let stop = UIBarButtonItem(barButtonSystemItem: .stop,
                                    target: self,
                                    action: #selector(onStopBarButtonItemClicked(_:)))
         return stop
@@ -128,15 +128,15 @@ public class RKWebViewController: UIViewController {
     /// MARK: init
     public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
-        self.init(url: NSURL(string: string)!, webViewConfiguration: webViewConfiguration)
+        self.init(url: URL(string: string)!, webViewConfiguration: webViewConfiguration)
     }
     
-    public convenience init(url: NSURL, webViewConfiguration: WKWebViewConfiguration? = nil) {
+    public convenience init(url: URL, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
-        self.init(request: NSURLRequest(URL: url), webViewConfiguration: webViewConfiguration)
+        self.init(request: URLRequest(url: url), webViewConfiguration: webViewConfiguration)
     }
     
-    public init(request: NSURLRequest, webViewConfiguration: WKWebViewConfiguration? = nil) {
+    public init(request: URLRequest, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
         self.request = request
         self.webViewConfiguration = webViewConfiguration
@@ -148,7 +148,7 @@ public class RKWebViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override public func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         //
         view.addSubview(webView)
@@ -162,22 +162,22 @@ public class RKWebViewController: UIViewController {
         loadRequest(request)
     }
     
-    public override func viewWillAppear(animated: Bool) {
+    open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         //
         navigationController?.setToolbarHidden(false, animated: true)
     }
     
-    public override func viewWillDisappear(animated: Bool) {
+    open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         //
         navigationController?.setToolbarHidden(true, animated: false)
     }
     
-    public override func viewDidDisappear(animated: Bool) {
+    open override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         //
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+        UIApplication.shared.isNetworkActivityIndicatorVisible = false
     }
     
     deinit {
@@ -185,80 +185,80 @@ public class RKWebViewController: UIViewController {
         removeWebViewObserver()
     }
     
-    override public func didReceiveMemoryWarning() {
+    override open func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
         webView.stopLoading()
     }
 
-    public override func observeValueForKeyPath(keyPath: String?,
-                                                ofObject object: AnyObject?,
-                                                change: [String : AnyObject]?,
-                                                context: UnsafeMutablePointer<Void>) {
+    open override func observeValue(forKeyPath keyPath: String?,
+                                                of object: Any?,
+                                                change: [NSKeyValueChangeKey : Any]?,
+                                                context: UnsafeMutableRawPointer?) {
         if keyPath == KeyPath.Title {
             //
-            onTitleChange(change)
+            onTitleChange(change: change)
         } else if keyPath == KeyPath.Loading {
             //
-            onLoadingChange(change)
+            onLoadingChange(change: change)
             updateToolBarItems()
         } else if keyPath == KeyPath.CanGoBack || keyPath == KeyPath.CanGoForward {
             //
             updateToolBarItems()
         } else if keyPath == KeyPath.EstimatedProgress {
             //
-            onEstimatedProgressChange(change)
+            onEstimatedProgressChange(change: change)
         }
     }
     
-    public override func viewWillTransitionToSize(size: CGSize,
-                                                  withTransitionCoordinator coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransitionToSize(size, withTransitionCoordinator: coordinator)
+    open override func viewWillTransition(to size: CGSize,
+                                                  with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
         //
         onViewWillTransitionToSize(size)
     }
     
     /// MARK: Public Methods
-    public func loadRequest(request: NSURLRequest) {
+    open func loadRequest(_ request: URLRequest) {
         //
         self.request = request
         //
-        webView.loadRequest(request)
+        webView.load(request)
     }
     
     /// MARK: Layout
     func addLayoutConstraints() {
         //
         let webViewLayoutConstraints = [
-            NSLayoutConstraint(item: webView, attribute: .Top, relatedBy: .Equal, toItem: view, attribute: .Top, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: webView, attribute: .Left, relatedBy: .Equal, toItem: view, attribute: .Left, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: webView, attribute: .Bottom, relatedBy: .Equal, toItem: view, attribute: .Bottom, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: webView, attribute: .Right, relatedBy: .Equal, toItem: view, attribute: .Right, multiplier: 1, constant: 0)
+            NSLayoutConstraint(item: webView, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: webView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: webView, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: webView, attribute: .right, relatedBy: .equal, toItem: view, attribute: .right, multiplier: 1, constant: 0)
         ]
-        NSLayoutConstraint.activateConstraints(webViewLayoutConstraints)
+        NSLayoutConstraint.activate(webViewLayoutConstraints)
         //
         updateProgressViewTopLayoutConstraint(view.bounds.size)
         let progressViewLayoutConstraints = [
             progressViewTopLayoutConstraint,
-            NSLayoutConstraint(item: progressView, attribute: .Left, relatedBy: .Equal, toItem: view, attribute: .Left, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: progressView, attribute: .Width, relatedBy: .Equal, toItem: view, attribute: .Width, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: progressView, attribute: .Height, relatedBy: .Equal, toItem: nil, attribute: .NotAnAttribute, multiplier: 1, constant: 2)
+            NSLayoutConstraint(item: progressView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: progressView, attribute: .width, relatedBy: .equal, toItem: view, attribute: .width, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: progressView, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: 2)
         ]
-        NSLayoutConstraint.activateConstraints(progressViewLayoutConstraints)
+        NSLayoutConstraint.activate(progressViewLayoutConstraints)
     }
     
-    func updateProgressViewTopLayoutConstraint(size: CGSize) {
+    func updateProgressViewTopLayoutConstraint(_ size: CGSize) {
         // Portrait Landscape
         var navigationBarHeight: CGFloat = navigationController?.navigationBar.bounds.height ?? 0
         if size.width < size.height {
             // StatusBar Height
-            navigationBarHeight += 20//UIApplication.sharedApplication().statusBarFrame.height
+            navigationBarHeight += 20
         }
         
         progressViewTopLayoutConstraint.constant = navigationBarHeight
     }
     
-    func onViewWillTransitionToSize(size: CGSize) {
+    func onViewWillTransitionToSize(_ size: CGSize) {
         //
         updateProgressViewTopLayoutConstraint(size)
         //
@@ -266,20 +266,20 @@ public class RKWebViewController: UIViewController {
     }
     
     /// MARK: Key-Value Observe
-    func addWebViewObserver() {
+    open func addWebViewObserver() {
         //
-        webView.addObserver(self, forKeyPath: KeyPath.Title, options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.Title, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.Loading, options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.Loading, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.CanGoBack, options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.CanGoBack, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.CanGoForward, options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.CanGoForward, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.EstimatedProgress, options: .New, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.EstimatedProgress, options: .new, context: nil)
     }
     
-    func removeWebViewObserver() {
+    open func removeWebViewObserver() {
         //
         webView.removeObserver(self, forKeyPath: KeyPath.Title)
         //
@@ -292,36 +292,36 @@ public class RKWebViewController: UIViewController {
         webView.removeObserver(self, forKeyPath: KeyPath.EstimatedProgress)
     }
     
-    func onTitleChange(change: [String : AnyObject]?) {
+    open func onTitleChange(change: [NSKeyValueChangeKey : Any]?) {
         //
-        title = change?[NSKeyValueChangeNewKey] as? String
+        title = change?[NSKeyValueChangeKey.newKey] as? String
     }
     
-    func onLoadingChange(change: [String : AnyObject]?) {
+    open func onLoadingChange(change: [NSKeyValueChangeKey : Any]?) {
         //
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = webView.loading
+        UIApplication.shared.isNetworkActivityIndicatorVisible = webView.isLoading
         //
-        progressView.hidden = !webView.loading
+        progressView.isHidden = !webView.isLoading
     }
     
-    func onEstimatedProgressChange(change: [String : AnyObject]?) {
+    open func onEstimatedProgressChange(change: [NSKeyValueChangeKey : Any]?) {
         //
-        if let progress = change?[NSKeyValueChangeNewKey] as? Float {
+        if let progress = change?[NSKeyValueChangeKey.newKey] as? Float {
             //
             progressView.progress = progress
         }
     }
     
     /// MARK: Back，Forward, Refresh, Stop
-    func updateToolBarItems() {
+    open func updateToolBarItems() {
         //
-        backBarButtonItem.enabled = webView.canGoBack
+        backBarButtonItem.isEnabled = webView.canGoBack
         //
-        forwardBarButtonItem.enabled = webView.canGoForward
+        forwardBarButtonItem.isEnabled = webView.canGoForward
         //
-        let refreshStopBarButtonItem = webView.loading ? stopBarButtonItem : refreshBarButtonItem
+        let refreshStopBarButtonItem = webView.isLoading ? stopBarButtonItem : refreshBarButtonItem
         //
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace,
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace,
                                             target: nil,
                                             action: nil)
         //
@@ -335,88 +335,85 @@ public class RKWebViewController: UIViewController {
             flexibleSpace
         ]
         //
-        navigationController?.toolbar.barStyle = navigationController?.navigationBar.barStyle ?? .Default
+        navigationController?.toolbar.barStyle = navigationController?.navigationBar.barStyle ?? .default
         navigationController?.toolbar.tintColor = navigationController?.navigationBar.tintColor;
         setToolbarItems(items, animated: true)
     }
     
-    func onBackBarButtonItemClicked(sender: UIBarButtonItem) {
+    open func onBackBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.goBack()
     }
     
-    func onForwardBarButtonItemClicked(sender: UIBarButtonItem) {
+    open func onForwardBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.goForward()
     }
     
-    func onRefreshBarButtonItemClicked(sender: UIBarButtonItem) {
+    open func onRefreshBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.reload()
     }
     
-    func onStopBarButtonItemClicked(sender: UIBarButtonItem) {
+    open func onStopBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.stopLoading()
     }
     
-}
-
-extension RKWebViewController: WKUIDelegate {
-    //
-    public func webView(webView: WKWebView,
+    // WKUIDelegate
+    public func webView(_ webView: WKWebView,
                         runJavaScriptAlertPanelWithMessage message: String,
                         initiatedByFrame frame: WKFrameInfo,
-                        completionHandler: () -> Void) {
+                        completionHandler: @escaping () -> Void) {
         //
-        let action = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Default) { action in
+        let action = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { action in
             //
             completionHandler()
         }
         //
-        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .Alert)
+        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .alert)
         //
         alertController.addAction(action)
         //
-        presentViewController(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
     }
     
-    public func webView(webView: WKWebView,
+    public func webView(_ webView: WKWebView,
                         runJavaScriptConfirmPanelWithMessage message: String,
                         initiatedByFrame frame: WKFrameInfo,
-                        completionHandler: (Bool) -> Void) {
+                        completionHandler: @escaping (Bool) -> Void) {
         //
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Destructive) { action in
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .destructive) { action in
             completionHandler(true)
         }
         //
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Default) { action in
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .default) { action in
             //
             completionHandler(false)
         }
 
         //
-        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .Alert)
+        let alertController = UIAlertController(title: webView.title, message: message, preferredStyle: .alert)
         //
         alertController.addAction(okAction)
         alertController.addAction(cancelAction)
         //
-        presentViewController(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
     }
     
-    public func webView(webView: WKWebView,
+    public func webView(_ webView: WKWebView,
                         runJavaScriptTextInputPanelWithPrompt prompt: String,
                         defaultText: String?,
                         initiatedByFrame frame: WKFrameInfo,
-                        completionHandler: (String?) -> Void) {
+                        completionHandler: @escaping (String?) -> Void) {
         //
-        let alertController = UIAlertController(title: webView.title, message: prompt, preferredStyle: .Alert)
+        let alertController = UIAlertController(title: webView.title, message: prompt, preferredStyle: .alert)
         //
-        alertController.addTextFieldWithConfigurationHandler { textField in
+        alertController.addTextField { textField in
             textField.text = defaultText
         }
         //
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .Destructive) { action in
+        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .destructive) { action in
             completionHandler(alertController.textFields?.first?.text)
         }
         //
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .Default) { action in
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .default) { action in
             //
             completionHandler(nil)
         }
@@ -424,7 +421,7 @@ extension RKWebViewController: WKUIDelegate {
         alertController.addAction(okAction)
         alertController.addAction(cancelAction)
         //
-        presentViewController(alertController, animated: true, completion: nil)
+        present(alertController, animated: true, completion: nil)
     }
     
 }
@@ -433,44 +430,44 @@ public extension RKWebViewController {
     
     public static func BackImage() -> UIImage {
         //
-        UIGraphicsBeginImageContextWithOptions(CGSizeMake(12, 21), false, 0)
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 21), false, 0)
         
         let path = UIBezierPath()
         path.lineWidth = 2
-        path.lineCapStyle = .Round
-        path.lineJoinStyle = .Miter
+        path.lineCapStyle = .round
+        path.lineJoinStyle = .miter
         
-        path.moveToPoint(CGPointMake(11, 1))
-        path.addLineToPoint(CGPointMake(1, 11))
-        path.addLineToPoint(CGPointMake(11, 20))
+        path.move(to: CGPoint(x: 11, y: 1))
+        path.addLine(to: CGPoint(x: 1, y: 11))
+        path.addLine(to: CGPoint(x: 11, y: 20))
         path.stroke()
         
         let image = UIGraphicsGetImageFromCurrentImageContext()
         
         UIGraphicsEndImageContext()
         //
-        return image
+        return image!
     }
     
     public static func ForwardImage() -> UIImage {
         //
-        UIGraphicsBeginImageContextWithOptions(CGSizeMake(12, 21), false, 0)
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 21), false, 0)
         
         let path = UIBezierPath()
         path.lineWidth = 2
-        path.lineCapStyle = .Round
-        path.lineJoinStyle = .Miter
+        path.lineCapStyle = .round
+        path.lineJoinStyle = .miter
         
-        path.moveToPoint(CGPointMake(1, 1))
-        path.addLineToPoint(CGPointMake(11, 11))
-        path.addLineToPoint(CGPointMake(1, 20))
+        path.move(to: CGPoint(x: 1, y: 1))
+        path.addLine(to: CGPoint(x: 11, y: 11))
+        path.addLine(to: CGPoint(x: 1, y: 20))
         path.stroke()
         
         let image = UIGraphicsGetImageFromCurrentImageContext()
         
         UIGraphicsEndImageContext()
         //
-        return image
+        return image!
     }
     
 }

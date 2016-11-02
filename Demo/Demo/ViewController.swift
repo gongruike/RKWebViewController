@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        view.backgroundColor = UIColor.brownColor()
+        view.backgroundColor = UIColor.brown
         
         
     }
@@ -38,11 +38,11 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    @IBAction func onPushBtnClicked(sender: UIButton) {
+    @IBAction func onPushBtnClicked(_ sender: UIButton) {
         
         let webViewController = RKWebViewController(string: "https://bjtiup.tiup.cn")
-        webViewController.progressViewTintColor = UIColor.redColor()
-        showViewController(webViewController, sender: nil)
+        webViewController.progressViewTintColor = UIColor.red
+        show(webViewController, sender: nil)
     }
 
 }
