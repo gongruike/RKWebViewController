@@ -28,55 +28,22 @@ open class RKWebViewController: UIViewController {
 
     private struct KeyPath {
         //
-        static let Title                = "title"
+        static let title                = "title"
         //
-        static let Loading              = "loading"
+        static let loading              = "loading"
         //
-        static let CanGoBack            = "canGoBack"
+        static let canGoBack            = "canGoBack"
         //
-        static let CanGoForward         = "canGoForward"
+        static let canGoForward         = "canGoForward"
         //
-        static let EstimatedProgress    = "estimatedProgress"
+        static let estimatedProgress    = "estimatedProgress"
     }
     
-    open var currentURL: URL? {
-        return webView.url
-    }
+    open var url: URL?
     
-    open var request: URLRequest
+    open var webView: WKWebView
     
-    open var webViewConfiguration: WKWebViewConfiguration?
-
-    open lazy var webView: WKWebView! = {
-        //
-        let configuration = self.webViewConfiguration ?? WKWebViewConfiguration()
-        //
-        let wk = WKWebView(frame: CGRect.zero, configuration: configuration)
-        //
-        wk.translatesAutoresizingMaskIntoConstraints = false
-        //
-        return wk
-    }()
-    
-    open lazy var progressView: UIProgressView! = {
-        //
-        let pv = UIProgressView(progressViewStyle: .default)
-        //
-        pv.translatesAutoresizingMaskIntoConstraints = false
-        //
-        pv.progressTintColor = self.progressViewTintColor
-        //
-        pv.trackTintColor = UIColor.clear
-        //
-        return pv
-    }()
-    
-    open var progressViewTintColor: UIColor = UIColor.blue {
-        didSet {
-            //
-            progressView.progressTintColor = progressViewTintColor
-        }
-    }
+    open var progressView: UIProgressView
     
     private lazy var progressViewTopLayoutConstraint: NSLayoutConstraint = {
         //
@@ -86,10 +53,10 @@ open class RKWebViewController: UIViewController {
                                   toItem: self.view,
                                   attribute: .top,
                                   multiplier: 1,
-                                  constant: 0)
+                                  constant: 1)
     }()
     
-    // Toolbar items
+    //
     open lazy var backBarButtonItem: UIBarButtonItem = {
         //
         let image = self.backImage()
@@ -131,18 +98,20 @@ open class RKWebViewController: UIViewController {
     /// MARK: init
     public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
-        self.init(url: URL(string: string)!, webViewConfiguration: webViewConfiguration)
+        self.init(url: URL(string: string), webViewConfiguration: webViewConfiguration)
     }
     
-    public convenience init(url: URL, webViewConfiguration: WKWebViewConfiguration? = nil) {
+    public init(url: URL?, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
-        self.init(request: URLRequest(url: url), webViewConfiguration: webViewConfiguration)
-    }
-    
-    public init(request: URLRequest, webViewConfiguration: WKWebViewConfiguration? = nil) {
+        self.url = url
         //
-        self.request = request
-        self.webViewConfiguration = webViewConfiguration
+        self.webView = WKWebView(frame: CGRect.zero,
+                                 configuration: webViewConfiguration ?? WKWebViewConfiguration())
+        //
+        progressView = UIProgressView(progressViewStyle: .default)
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        progressView.progressTintColor = UIColor.gray
+        progressView.trackTintColor = UIColor.clear
         //
         super.init(nibName: nil, bundle: nil)
     }
@@ -150,33 +119,23 @@ open class RKWebViewController: UIViewController {
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    ///
-    open func loadRequest(_ request: URLRequest) {
-        //
-        self.request = request
-        //
-        webView.load(request)
-    }
 
-    override open func viewDidLoad() {
-        super.viewDidLoad()
+
+    open override func loadView() {
         //
-        view.addSubview(webView)
-        //
-        view.addSubview(progressView)
-        //
-        addLayoutConstraints()
-        //
+        view = webView
         addWebViewObserver()
         //
-        loadRequest(request)
+        view.addSubview(progressView)
+        addProgressViewLayoutConstraints()
+        //
+        loadURL(url)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         //
-        navigationController?.setToolbarHidden(false, animated: true)
+        navigationController?.setToolbarHidden(false, animated: false)
     }
     
     open override func viewWillDisappear(_ animated: Bool) {
@@ -196,27 +155,19 @@ open class RKWebViewController: UIViewController {
         removeWebViewObserver()
     }
 
-    open override func viewWillTransition(to size: CGSize,
-                                          with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
+    // Public methods
+    open func loadURL(_ url: URL?) {
         //
-        onViewWillTransitionToSize(size)
+        guard let url = url else {
+            return
+        }
+        webView.load(URLRequest(url: url))
     }
     
-
-    ///
-    /// MARK: Layout
-    func addLayoutConstraints() {
+    //
+    private func addProgressViewLayoutConstraints() {
         //
-        let webViewLayoutConstraints = [
-            NSLayoutConstraint(item: webView, attribute: .top, relatedBy: .equal, toItem: view, attribute: .top, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: webView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: webView, attribute: .bottom, relatedBy: .equal, toItem: view, attribute: .bottom, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: webView, attribute: .right, relatedBy: .equal, toItem: view, attribute: .right, multiplier: 1, constant: 0)
-        ]
-        NSLayoutConstraint.activate(webViewLayoutConstraints)
-        //
-        updateProgressViewTopLayoutConstraint(view.bounds.size)
+//        updateProgressViewTopLayoutConstraint(view.bounds.size)
         let progressViewLayoutConstraints = [
             progressViewTopLayoutConstraint,
             NSLayoutConstraint(item: progressView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0),
@@ -225,88 +176,100 @@ open class RKWebViewController: UIViewController {
         ]
         NSLayoutConstraint.activate(progressViewLayoutConstraints)
     }
+
+    //
+    open override func viewWillTransition(to size: CGSize,
+                                          with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        //
+//        onViewWillTransitionToSize(size)
+    }
+ 
+    func onViewWillTransition(to size: CGSize,
+                              with coordinator: UIViewControllerTransitionCoordinator) {
+//
+//        updateProgressViewTopLayoutConstraint(size)
+//
+        view.setNeedsLayout()
+    }
     
-    func updateProgressViewTopLayoutConstraint(_ size: CGSize) {
+    func updateProgressViewTopLayoutConstraint(size: CGSize) {
         // Portrait Landscape
         // TODO
         progressViewTopLayoutConstraint.constant = (size.width < size.height) ? 64 : 32
     }
-    
-    func onViewWillTransitionToSize(_ size: CGSize) {
-        //
-        updateProgressViewTopLayoutConstraint(size)
-        //
-        view.setNeedsLayout()
-    }
-    
-    ///
-    /// MARK: Key-Value Observing
+ 
+    /// MARK: KVO
     open override func observeValue(forKeyPath keyPath: String?,
                                     of object: Any?,
                                     change: [NSKeyValueChangeKey : Any]?,
                                     context: UnsafeMutableRawPointer?) {
-        if keyPath == KeyPath.Title {
+        if keyPath == KeyPath.title {
             //
-            onTitleChange(change: change)
-        } else if keyPath == KeyPath.Loading {
+            onTitleChanged(change)
+        } else if keyPath == KeyPath.loading {
             //
-            onLoadingChange(change: change)
+            onLoadingChanged(change)
+        } else if keyPath == KeyPath.canGoBack || keyPath == KeyPath.canGoForward {
+            //
             updateToolBarItems()
-        } else if keyPath == KeyPath.CanGoBack || keyPath == KeyPath.CanGoForward {
+        } else if keyPath == KeyPath.estimatedProgress {
             //
-            updateToolBarItems()
-        } else if keyPath == KeyPath.EstimatedProgress {
-            //
-            onEstimatedProgressChange(change: change)
+            onEstimatedProgressChanged(change)
         }
     }
     
     open func addWebViewObserver() {
         //
-        webView.addObserver(self, forKeyPath: KeyPath.Title, options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.title, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.Loading, options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.loading, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.CanGoBack, options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.canGoBack, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.CanGoForward, options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.canGoForward, options: .new, context: nil)
         //
-        webView.addObserver(self, forKeyPath: KeyPath.EstimatedProgress, options: .new, context: nil)
+        webView.addObserver(self, forKeyPath: KeyPath.estimatedProgress, options: .new, context: nil)
     }
     
     open func removeWebViewObserver() {
         //
-        webView.removeObserver(self, forKeyPath: KeyPath.Title)
+        webView.removeObserver(self, forKeyPath: KeyPath.title)
         //
-        webView.removeObserver(self, forKeyPath: KeyPath.Loading)
+        webView.removeObserver(self, forKeyPath: KeyPath.loading)
         //
-        webView.removeObserver(self, forKeyPath: KeyPath.CanGoBack)
+        webView.removeObserver(self, forKeyPath: KeyPath.canGoBack)
         //
-        webView.removeObserver(self, forKeyPath: KeyPath.CanGoForward)
+        webView.removeObserver(self, forKeyPath: KeyPath.canGoForward)
         //
-        webView.removeObserver(self, forKeyPath: KeyPath.EstimatedProgress)
+        webView.removeObserver(self, forKeyPath: KeyPath.estimatedProgress)
     }
     
-    open func onTitleChange(change: [NSKeyValueChangeKey : Any]?) {
+    open func onTitleChanged(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         title = change?[NSKeyValueChangeKey.newKey] as? String
     }
     
-    open func onLoadingChange(change: [NSKeyValueChangeKey : Any]?) {
+    open func onLoadingChanged(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         UIApplication.shared.isNetworkActivityIndicatorVisible = webView.isLoading
         //
         progressView.isHidden = !webView.isLoading
+        //
+        updateToolBarItems()
     }
     
-    open func onEstimatedProgressChange(change: [NSKeyValueChangeKey : Any]?) {
+    func onBackForwardChange(_ change: [NSKeyValueChangeKey : Any]?) {
+        
+    }
+    
+    open func onEstimatedProgressChanged(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         if let progress = change?[NSKeyValueChangeKey.newKey] as? Float {
             //
             progressView.progress = progress
         }
     }
-    
     
     /// ToolBar
     /// MARK: Back，Forward, Refresh, Stop
@@ -321,7 +284,6 @@ open class RKWebViewController: UIViewController {
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace,
                                             target: nil,
                                             action: nil)
-        //
         let items = [
             flexibleSpace,
             backBarButtonItem,

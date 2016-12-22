@@ -28,21 +28,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        view.backgroundColor = UIColor.brown
-        
-        
+        view.backgroundColor = UIColor.brown        
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
-    }
-
-    @IBAction func onPushBtnClicked(_ sender: UIButton) {
-        
-        let webViewController = RKWebViewController(string: "http://www.baidu.com")
-        webViewController.progressViewTintColor = UIColor.red
-        show(webViewController, sender: nil)
     }
 
 }
