@@ -34,7 +34,8 @@ class ViewController: UIViewController {
     
     @IBAction func onPushBtnClicked(_ sender: UIButton) {
         //
-        navigationController?.navigationBar.isTranslucent = false
+//        navigationController?.navigationBar.isTranslucent = false
+//        navigationController?.navigationBar.isHidden = true
         let webViewController = RKWebViewController(string: "http://www.qq.com")
         show(webViewController, sender: nil)
     }

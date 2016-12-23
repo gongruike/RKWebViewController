@@ -55,7 +55,7 @@ open class RKWebViewController: UIViewController {
                                   toItem: self.view,
                                   attribute: .top,
                                   multiplier: 1,
-                                  constant: 1)
+                                  constant: 0)
     }()
     
     open lazy var backBarButtonItem: UIBarButtonItem = {
@@ -176,9 +176,15 @@ open class RKWebViewController: UIViewController {
     }
     
     public func updateProgressViewTopLayoutConstraint(size: CGSize) {
-        //
-        // 判断方向
-        // 判断navigation isNavigationBarHidden
+        // TODO
+        if let navigationBar = navigationController?.navigationBar, !navigationBar.isHidden, navigationBar.isTranslucent {
+            // isTranslucent & rotate => navigationBar is wrong
+            let statusBarHeight: CGFloat = (size.width <= size.height) ? UIApplication.shared.statusBarFrame.height : 0
+            let navigationBarHeight: CGFloat = navigationBar.bounds.height//(size.width <= size.height) ? 44 : 32
+            progressViewTopLayoutConstraint.constant = navigationBarHeight + statusBarHeight
+        } else {
+            progressViewTopLayoutConstraint.constant = 0
+        }
     }
     
     // Private Methods
@@ -199,8 +205,20 @@ open class RKWebViewController: UIViewController {
                                           with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         //
-        onViewWillTransition(to: size,
-                             with: coordinator)
+
+        coordinator.animate(alongsideTransition: nil) { (context) in
+            self.onViewWillTransition(to: size,
+                                      with: coordinator)
+        }
+        
+        // TODO
+//        coordinator.animate(alongsideTransition: { (context) in
+//            //
+//            self.onViewWillTransition(to: size,
+//                                 with: coordinator)
+////            self.view.setNeedsLayout()
+//        }, completion: nil)
+        
     }
  
     open override func observeValue(forKeyPath keyPath: String?,
@@ -308,7 +326,7 @@ open class RKWebViewController: UIViewController {
     // Back、 forward images
     open func backImage() -> UIImage? {
         //
-        UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 21), false, 0)
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 22), false, 0)
         
         let path = UIBezierPath()
         path.lineWidth = 2
@@ -317,7 +335,7 @@ open class RKWebViewController: UIViewController {
         
         path.move(to: CGPoint(x: 11, y: 1))
         path.addLine(to: CGPoint(x: 1, y: 11))
-        path.addLine(to: CGPoint(x: 11, y: 20))
+        path.addLine(to: CGPoint(x: 11, y: 21))
         path.stroke()
         
         let image = UIGraphicsGetImageFromCurrentImageContext()
@@ -329,23 +347,10 @@ open class RKWebViewController: UIViewController {
     
     open func forwardImage() -> UIImage? {
         //
-        UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 21), false, 0)
-        
-        let path = UIBezierPath()
-        path.lineWidth = 2
-        path.lineCapStyle = .round
-        path.lineJoinStyle = .miter
-        
-        path.move(to: CGPoint(x: 1, y: 1))
-        path.addLine(to: CGPoint(x: 11, y: 11))
-        path.addLine(to: CGPoint(x: 1, y: 20))
-        path.stroke()
-        
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        
-        UIGraphicsEndImageContext()
-        //
-        return image
+        guard let cgImage = backImage()?.cgImage else {
+            return nil
+        }
+        return UIImage(cgImage: cgImage, scale: UIScreen.main.scale, orientation: .down)
     }
     
 }
