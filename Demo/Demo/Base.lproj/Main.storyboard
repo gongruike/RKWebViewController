@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16C67" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="WzA-MJ-M4c">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -11,6 +11,7 @@
         <!--Navigation Controller-->
         <scene sceneID="wyn-VC-gvg">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="hBA-Xx-k2x" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController id="WzA-MJ-M4c" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="B51-sn-6MZ">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -20,13 +21,13 @@
                         <segue destination="yGq-20-9AD" kind="relationship" relationship="rootViewController" id="P4V-4S-rwI"/>
                     </connections>
                 </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="hBA-Xx-k2x" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-879" y="189"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="gQ2-U1-8Nc">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="5Jv-ti-2MF" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <viewController id="yGq-20-9AD" customClass="ViewController" customModule="Demo" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="UT9-Yl-IpS"/>
@@ -35,11 +36,23 @@
                     <view key="view" contentMode="scaleToFill" id="Ynp-Mu-pRg">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iSr-Bc-yno">
+                                <rect key="frame" x="169.5" y="164" width="35" height="30"/>
+                                <state key="normal" title="Push"/>
+                                <connections>
+                                    <action selector="onPushBtnClicked:" destination="yGq-20-9AD" eventType="touchUpInside" id="JOw-Il-Vsg"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="iSr-Bc-yno" firstAttribute="top" secondItem="UT9-Yl-IpS" secondAttribute="bottom" constant="100" id="BZv-I1-EBJ"/>
+                            <constraint firstItem="iSr-Bc-yno" firstAttribute="centerX" secondItem="Ynp-Mu-pRg" secondAttribute="centerX" id="JOD-nb-jHX"/>
+                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="gTI-iS-s3a"/>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="5Jv-ti-2MF" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-113" y="188"/>
         </scene>

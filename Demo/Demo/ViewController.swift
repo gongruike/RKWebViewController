@@ -27,13 +27,16 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        view.backgroundColor = UIColor.brown        
+        //
+        view.backgroundColor = UIColor.brown
+        title = "RK"
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    @IBAction func onPushBtnClicked(_ sender: UIButton) {
+        //
+        navigationController?.navigationBar.isTranslucent = false
+        let webViewController = RKWebViewController(string: "http://www.qq.com")
+        show(webViewController, sender: nil)
     }
 
 }
