@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9F756FE31E10F3360074CBFB /* MyWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F756FE21E10F3360074CBFB /* MyWebViewController.swift */; };
 		9F81B2BE1D4F1A7600FBD02C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F81B2BD1D4F1A7600FBD02C /* AppDelegate.swift */; };
 		9F81B2C01D4F1A7600FBD02C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F81B2BF1D4F1A7600FBD02C /* ViewController.swift */; };
 		9F81B2C31D4F1A7600FBD02C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9F81B2C11D4F1A7600FBD02C /* Main.storyboard */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9F756FE21E10F3360074CBFB /* MyWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyWebViewController.swift; sourceTree = "<group>"; };
 		9F81B2BA1D4F1A7600FBD02C /* Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F81B2BD1D4F1A7600FBD02C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9F81B2BF1D4F1A7600FBD02C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 				9F81B2EE1D4F1B6100FBD02C /* RKWebViewController */,
 				9F81B2BD1D4F1A7600FBD02C /* AppDelegate.swift */,
 				9F81B2BF1D4F1A7600FBD02C /* ViewController.swift */,
+				9F756FE21E10F3360074CBFB /* MyWebViewController.swift */,
 				9F81B2C11D4F1A7600FBD02C /* Main.storyboard */,
 				9F81B2C41D4F1A7600FBD02C /* Assets.xcassets */,
 				9F81B2C61D4F1A7600FBD02C /* LaunchScreen.storyboard */,
@@ -274,6 +277,7 @@
 				9F81B2C01D4F1A7600FBD02C /* ViewController.swift in Sources */,
 				9F81B2F01D4F1B7100FBD02C /* RKWebViewController.swift in Sources */,
 				9F81B2BE1D4F1A7600FBD02C /* AppDelegate.swift in Sources */,
+				9F756FE31E10F3360074CBFB /* MyWebViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

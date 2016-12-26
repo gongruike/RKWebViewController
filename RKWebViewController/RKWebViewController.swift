@@ -47,7 +47,7 @@ open class RKWebViewController: UIViewController {
     
     open var progressView: UIProgressView
     
-    open lazy var progressViewTopLayoutConstraint: NSLayoutConstraint = {
+    private lazy var progressViewTopLayoutConstraint: NSLayoutConstraint = {
         //
         return NSLayoutConstraint(item: self.progressView,
                                   attribute: .top,
@@ -60,9 +60,7 @@ open class RKWebViewController: UIViewController {
     
     open lazy var backBarButtonItem: UIBarButtonItem = {
         //
-        let image = self.backImage()
-        //
-        let back = UIBarButtonItem(image: image,
+        let back = UIBarButtonItem(image: self.backImage(),
                                    style: .plain,
                                    target: self,
                                    action: #selector(onBackBarButtonItemClicked(_:)))
@@ -71,9 +69,7 @@ open class RKWebViewController: UIViewController {
     
     open lazy var forwardBarButtonItem: UIBarButtonItem = {
         //
-        let image = self.forwardImage()
-        //
-        let forward = UIBarButtonItem(image: image,
+        let forward = UIBarButtonItem(image: self.forwardImage(),
                                       style: .plain,
                                       target: self,
                                       action: #selector(onForwardBarButtonItemClicked(_:)))
@@ -98,7 +94,9 @@ open class RKWebViewController: UIViewController {
 
     open lazy var flexibleSpace: UIBarButtonItem = {
         //
-        return UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        return UIBarButtonItem(barButtonSystemItem: .flexibleSpace,
+                               target: nil,
+                               action: nil)
     }()
     
     // Life-cycle
@@ -134,7 +132,7 @@ open class RKWebViewController: UIViewController {
         view.addSubview(progressView)
         addProgressViewLayoutConstraints()
         //
-        loadURL(url)
+        loadURL(url)        
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -169,18 +167,18 @@ open class RKWebViewController: UIViewController {
         webView.load(URLRequest(url: url))
     }
     
-    public func onViewWillTransition(to size: CGSize,
-                                   with coordinator: UIViewControllerTransitionCoordinator) {
+    internal func onViewWillTransition(to size: CGSize,
+                                     with coordinator: UIViewControllerTransitionCoordinator) {
         //
         updateProgressViewTopLayoutConstraint(size: size)
     }
     
-    public func updateProgressViewTopLayoutConstraint(size: CGSize) {
-        // TODO
+    internal func updateProgressViewTopLayoutConstraint(size: CGSize) {
+        //
         if let navigationBar = navigationController?.navigationBar, !navigationBar.isHidden, navigationBar.isTranslucent {
-            // isTranslucent & rotate => navigationBar is wrong
+            //
             let statusBarHeight: CGFloat = (size.width <= size.height) ? UIApplication.shared.statusBarFrame.height : 0
-            let navigationBarHeight: CGFloat = navigationBar.bounds.height//(size.width <= size.height) ? 44 : 32
+            let navigationBarHeight: CGFloat = navigationBar.bounds.height
             progressViewTopLayoutConstraint.constant = navigationBarHeight + statusBarHeight
         } else {
             progressViewTopLayoutConstraint.constant = 0
@@ -204,27 +202,19 @@ open class RKWebViewController: UIViewController {
     open override func viewWillTransition(to size: CGSize,
                                           with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        //
-
+        // There is a bug, when the navigationbar's isTranslucent is false.
+        // everytime refresh the webview, it get offset up the navigationbar height
         coordinator.animate(alongsideTransition: nil) { (context) in
             self.onViewWillTransition(to: size,
                                       with: coordinator)
         }
-        
-        // TODO
-//        coordinator.animate(alongsideTransition: { (context) in
-//            //
-//            self.onViewWillTransition(to: size,
-//                                 with: coordinator)
-////            self.view.setNeedsLayout()
-//        }, completion: nil)
-        
     }
  
     open override func observeValue(forKeyPath keyPath: String?,
                                     of object: Any?,
                                     change: [NSKeyValueChangeKey : Any]?,
                                     context: UnsafeMutableRawPointer?) {
+        //
         if keyPath == KeyPath.title {
             //
             onTitleChange(change)
@@ -237,6 +227,12 @@ open class RKWebViewController: UIViewController {
         } else if keyPath == KeyPath.estimatedProgress {
             //
             onEstimatedProgressChange(change)
+        } else {
+            // Call super
+            super.observeValue(forKeyPath: keyPath,
+                               of: object,
+                               change: change,
+                               context: context)
         }
     }
     
@@ -248,7 +244,7 @@ open class RKWebViewController: UIViewController {
         }
     }
     
-    open func removeWebViewObserver() {
+    func removeWebViewObserver() {
         //
         KeyPath.allKeyPaths.forEach { (keyPath) in
             webView.removeObserver(self, forKeyPath: keyPath)
@@ -269,7 +265,7 @@ open class RKWebViewController: UIViewController {
         updateToolBarItems()
     }
     
-    func onBackForwardListChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    open func onBackForwardListChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         updateToolBarItems()
     }

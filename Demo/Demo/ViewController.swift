@@ -37,6 +37,8 @@ class ViewController: UIViewController {
 //        navigationController?.navigationBar.isTranslucent = false
 //        navigationController?.navigationBar.isHidden = true
         let webViewController = RKWebViewController(string: "http://www.qq.com")
+//        webViewController.hidesBottomBarWhenPushed = true
+        webViewController.onTitleChange(nil)
         show(webViewController, sender: nil)
     }
 
