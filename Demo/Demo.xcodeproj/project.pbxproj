@@ -15,6 +15,7 @@
 		9FA662691E1233DB0023A8C7 /* DemoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA662681E1233DB0023A8C7 /* DemoTests.swift */; };
 		9FA662741E1233DB0023A8C7 /* DemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA662731E1233DB0023A8C7 /* DemoUITests.swift */; };
 		9FA6628D1E12341A0023A8C7 /* MyWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA6628C1E12341A0023A8C7 /* MyWebViewController.swift */; };
+		9FA662911E123D320023A8C7 /* RKWebViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FA662871E1233EC0023A8C7 /* RKWebViewController.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9FA662911E123D320023A8C7 /* RKWebViewController.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

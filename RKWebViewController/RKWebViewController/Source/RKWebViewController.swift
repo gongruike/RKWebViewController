@@ -47,7 +47,7 @@ open class RKWebViewController: UIViewController {
     
     open var progressView: UIProgressView
     
-    private lazy var progressViewTopLayoutConstraint: NSLayoutConstraint = {
+    open lazy var progressViewTopLayoutConstraint: NSLayoutConstraint = {
         //
         return NSLayoutConstraint(item: self.progressView,
                                   attribute: .top,
@@ -167,8 +167,8 @@ open class RKWebViewController: UIViewController {
         webView.load(URLRequest(url: url))
     }
     
-    internal func onViewWillTransition(to size: CGSize,
-                                     with coordinator: UIViewControllerTransitionCoordinator) {
+    func onViewWillTransition(to size: CGSize,
+                              with coordinator: UIViewControllerTransitionCoordinator) {
         //
         updateProgressViewTopLayoutConstraint(size: size)
     }
@@ -237,7 +237,7 @@ open class RKWebViewController: UIViewController {
     }
     
     // MARK: KVO
-    open func addWebViewObserver() {
+    func addWebViewObserver() {
         //
         KeyPath.allKeyPaths.forEach { (keyPath) in
             webView.addObserver(self, forKeyPath: keyPath, options: .new, context: nil)
@@ -251,12 +251,12 @@ open class RKWebViewController: UIViewController {
         }
     }
     
-    open func onTitleChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    func onTitleChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         title = change?[NSKeyValueChangeKey.newKey] as? String
     }
     
-    open func onLoadingChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    func onLoadingChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         UIApplication.shared.isNetworkActivityIndicatorVisible = webView.isLoading
         //
@@ -265,12 +265,12 @@ open class RKWebViewController: UIViewController {
         updateToolBarItems()
     }
     
-    open func onBackForwardListChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    func onBackForwardListChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         updateToolBarItems()
     }
     
-    open func onEstimatedProgressChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    func onEstimatedProgressChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         if let progress = change?[NSKeyValueChangeKey.newKey] as? Float {
             //
@@ -280,7 +280,7 @@ open class RKWebViewController: UIViewController {
     
     /// ToolBar
     /// MARK: Back，Forward, Refresh, Stop
-    open func updateToolBarItems() {
+    func updateToolBarItems() {
         //
         backBarButtonItem.isEnabled = webView.canGoBack
         //
@@ -303,24 +303,24 @@ open class RKWebViewController: UIViewController {
         setToolbarItems(items, animated: false)
     }
     
-    open func onBackBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    func onBackBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.goBack()
     }
     
-    open func onForwardBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    func onForwardBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.goForward()
     }
     
-    open func onRefreshBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    func onRefreshBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.reload()
     }
     
-    open func onStopBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    func onStopBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.stopLoading()
     }
     
     // Back、 forward images
-    open func backImage() -> UIImage? {
+    func backImage() -> UIImage? {
         //
         UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 22), false, 0)
         
@@ -341,7 +341,7 @@ open class RKWebViewController: UIViewController {
         return image
     }
     
-    open func forwardImage() -> UIImage? {
+    func forwardImage() -> UIImage? {
         //
         guard let cgImage = backImage()?.cgImage else {
             return nil
