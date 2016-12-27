@@ -159,7 +159,7 @@ open class RKWebViewController: UIViewController {
     }
 
     // Public methods
-    public func loadURL(_ url: URL?) {
+    open func loadURL(_ url: URL?) {
         //
         guard let url = url else {
             return
@@ -173,7 +173,7 @@ open class RKWebViewController: UIViewController {
         updateProgressViewTopLayoutConstraint(size: size)
     }
     
-    internal func updateProgressViewTopLayoutConstraint(size: CGSize) {
+    func updateProgressViewTopLayoutConstraint(size: CGSize) {
         //
         if let navigationBar = navigationController?.navigationBar, !navigationBar.isHidden, navigationBar.isTranslucent {
             //
