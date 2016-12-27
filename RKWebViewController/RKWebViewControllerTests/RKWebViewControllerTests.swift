@@ -1,15 +1,15 @@
 //
-//  DemoTests.swift
-//  DemoTests
+//  RKWebViewControllerTests.swift
+//  RKWebViewControllerTests
 //
 //  Created by gongruike on 2016/12/27.
 //  Copyright © 2016年 gongruike. All rights reserved.
 //
 
 import XCTest
-@testable import Demo
+@testable import RKWebViewController
 
-class DemoTests: XCTestCase {
+class RKWebViewControllerTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
