@@ -201,8 +201,10 @@ open class RKWebViewController: UIViewController {
         webView.load(URLRequest(url: url))
     }
     
-    open func updateProgressViewTopLayoutConstraint(size: CGSize) {
+    // 变化progressViewTopLayoutConstraint
+    open func updateProgressViewTopLayoutConstraint() {
         //
+        let size = view.bounds.size
         if let navigationBar = navigationController?.navigationBar, !navigationBar.isHidden, navigationBar.isTranslucent {
             //
             let statusBarHeight: CGFloat = (size.width <= size.height) ? UIApplication.shared.statusBarFrame.height : 0
@@ -216,7 +218,7 @@ open class RKWebViewController: UIViewController {
     // Private Methods
     private func addProgressViewLayoutConstraints() {
         //
-        updateProgressViewTopLayoutConstraint(size: view.bounds.size)
+        updateProgressViewTopLayoutConstraint()
         let progressViewLayoutConstraints = [
             progressViewTopLayoutConstraint,
             NSLayoutConstraint(item: progressView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0),
@@ -229,7 +231,7 @@ open class RKWebViewController: UIViewController {
     private func onViewWillTransition(to size: CGSize,
                                       with coordinator: UIViewControllerTransitionCoordinator) {
         //
-        updateProgressViewTopLayoutConstraint(size: size)
+        updateProgressViewTopLayoutConstraint()
     }
 
 }
@@ -237,26 +239,26 @@ open class RKWebViewController: UIViewController {
 // MARK: KVO
 extension RKWebViewController {
     
-    func addWebViewObserver() {
+    open func addWebViewObserver() {
         //
         KeyPath.allKeyPaths.forEach { (keyPath) in
             webView.addObserver(self, forKeyPath: keyPath, options: .new, context: nil)
         }
     }
     
-    func removeWebViewObserver() {
+    open func removeWebViewObserver() {
         //
         KeyPath.allKeyPaths.forEach { (keyPath) in
             webView.removeObserver(self, forKeyPath: keyPath)
         }
     }
     
-    func onTitleChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    open func onTitleChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         title = change?[NSKeyValueChangeKey.newKey] as? String
     }
     
-    func onLoadingChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    open func onLoadingChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         UIApplication.shared.isNetworkActivityIndicatorVisible = webView.isLoading
         //
@@ -265,12 +267,12 @@ extension RKWebViewController {
         updateToolBarItems()
     }
     
-    func onBackForwardListChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    open func onBackForwardListChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         updateToolBarItems()
     }
     
-    func onEstimatedProgressChange(_ change: [NSKeyValueChangeKey : Any]?) {
+    open func onEstimatedProgressChange(_ change: [NSKeyValueChangeKey : Any]?) {
         //
         if let progress = change?[NSKeyValueChangeKey.newKey] as? Float {
             //
@@ -283,7 +285,7 @@ extension RKWebViewController {
 // ToolBar: Back，Forward, Refresh, Stop
 extension RKWebViewController {
 
-    func updateToolBarItems() {
+    open func updateToolBarItems() {
         //
         backBarButtonItem.isEnabled = webView.canGoBack
         //
@@ -306,19 +308,19 @@ extension RKWebViewController {
         setToolbarItems(items, animated: false)
     }
     
-    func onBackBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    open func onBackBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.goBack()
     }
     
-    func onForwardBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    open func onForwardBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.goForward()
     }
     
-    func onRefreshBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    open func onRefreshBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.reload()
     }
     
-    func onStopBarButtonItemClicked(_ sender: UIBarButtonItem) {
+    open func onStopBarButtonItemClicked(_ sender: UIBarButtonItem) {
         webView.stopLoading()
     }
     
@@ -327,7 +329,7 @@ extension RKWebViewController {
 // Back、 forward images
 extension RKWebViewController {
     
-    func backImage() -> UIImage? {
+    open func backImage() -> UIImage? {
         //
         UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 22), false, 0)
         
@@ -348,7 +350,7 @@ extension RKWebViewController {
         return image
     }
     
-    func forwardImage() -> UIImage? {
+    open func forwardImage() -> UIImage? {
         //
         guard let cgImage = backImage()?.cgImage else {
             return nil
