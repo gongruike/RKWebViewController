@@ -26,7 +26,7 @@ import WebKit
 
 open class RKWebViewController: UIViewController {
 
-    private struct KeyPath {
+    fileprivate struct KeyPath {
         //
         static let title                = "title"
         //
@@ -41,7 +41,7 @@ open class RKWebViewController: UIViewController {
         static let allKeyPaths = [title, loading, canGoBack, canGoForward, estimatedProgress]
     }
     
-    open var url: URL?
+    open var url: URL
     
     open var webView: WKWebView
     
@@ -102,10 +102,10 @@ open class RKWebViewController: UIViewController {
     // Life-cycle
     public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
-        self.init(url: URL(string: string), webViewConfiguration: webViewConfiguration)
+        self.init(url: URL(string: string)!, webViewConfiguration: webViewConfiguration)
     }
     
-    public init(url: URL?, webViewConfiguration: WKWebViewConfiguration? = nil) {
+    public init(url: URL, webViewConfiguration: WKWebViewConfiguration? = nil) {
         //
         self.url = url
         //
@@ -132,7 +132,7 @@ open class RKWebViewController: UIViewController {
         view.addSubview(progressView)
         addProgressViewLayoutConstraints()
         //
-        loadURL(url)        
+        load(url: url)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -157,47 +157,7 @@ open class RKWebViewController: UIViewController {
         //
         removeWebViewObserver()
     }
-
-    // Public methods
-    open func loadURL(_ url: URL?) {
-        //
-        guard let url = url else {
-            return
-        }
-        webView.load(URLRequest(url: url))
-    }
     
-    func onViewWillTransition(to size: CGSize,
-                              with coordinator: UIViewControllerTransitionCoordinator) {
-        //
-        updateProgressViewTopLayoutConstraint(size: size)
-    }
-    
-    func updateProgressViewTopLayoutConstraint(size: CGSize) {
-        //
-        if let navigationBar = navigationController?.navigationBar, !navigationBar.isHidden, navigationBar.isTranslucent {
-            //
-            let statusBarHeight: CGFloat = (size.width <= size.height) ? UIApplication.shared.statusBarFrame.height : 0
-            let navigationBarHeight: CGFloat = navigationBar.bounds.height
-            progressViewTopLayoutConstraint.constant = navigationBarHeight + statusBarHeight
-        } else {
-            progressViewTopLayoutConstraint.constant = 0
-        }
-    }
-    
-    // Private Methods
-    private func addProgressViewLayoutConstraints() {
-        //
-        updateProgressViewTopLayoutConstraint(size: view.bounds.size)
-        let progressViewLayoutConstraints = [
-            progressViewTopLayoutConstraint,
-            NSLayoutConstraint(item: progressView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: progressView, attribute: .width, relatedBy: .equal, toItem: view, attribute: .width, multiplier: 1, constant: 0),
-            NSLayoutConstraint(item: progressView, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: 2)
-        ]
-        NSLayoutConstraint.activate(progressViewLayoutConstraints)
-    }
-
     // MARK: Override
     open override func viewWillTransition(to size: CGSize,
                                           with coordinator: UIViewControllerTransitionCoordinator) {
@@ -209,7 +169,7 @@ open class RKWebViewController: UIViewController {
                                       with: coordinator)
         }
     }
- 
+    
     open override func observeValue(forKeyPath keyPath: String?,
                                     of object: Any?,
                                     change: [NSKeyValueChangeKey : Any]?,
@@ -235,8 +195,48 @@ open class RKWebViewController: UIViewController {
                                context: context)
         }
     }
+
+    open func load(url: URL) {
+        //
+        webView.load(URLRequest(url: url))
+    }
     
-    // MARK: KVO
+    open func updateProgressViewTopLayoutConstraint(size: CGSize) {
+        //
+        if let navigationBar = navigationController?.navigationBar, !navigationBar.isHidden, navigationBar.isTranslucent {
+            //
+            let statusBarHeight: CGFloat = (size.width <= size.height) ? UIApplication.shared.statusBarFrame.height : 0
+            let navigationBarHeight: CGFloat = navigationBar.bounds.height
+            progressViewTopLayoutConstraint.constant = navigationBarHeight + statusBarHeight
+        } else {
+            progressViewTopLayoutConstraint.constant = 0
+        }
+    }
+    
+    // Private Methods
+    private func addProgressViewLayoutConstraints() {
+        //
+        updateProgressViewTopLayoutConstraint(size: view.bounds.size)
+        let progressViewLayoutConstraints = [
+            progressViewTopLayoutConstraint,
+            NSLayoutConstraint(item: progressView, attribute: .left, relatedBy: .equal, toItem: view, attribute: .left, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: progressView, attribute: .width, relatedBy: .equal, toItem: view, attribute: .width, multiplier: 1, constant: 0),
+            NSLayoutConstraint(item: progressView, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: 2)
+        ]
+        NSLayoutConstraint.activate(progressViewLayoutConstraints)
+    }
+    
+    private func onViewWillTransition(to size: CGSize,
+                                      with coordinator: UIViewControllerTransitionCoordinator) {
+        //
+        updateProgressViewTopLayoutConstraint(size: size)
+    }
+
+}
+
+// MARK: KVO
+extension RKWebViewController {
+    
     func addWebViewObserver() {
         //
         KeyPath.allKeyPaths.forEach { (keyPath) in
@@ -278,8 +278,11 @@ open class RKWebViewController: UIViewController {
         }
     }
     
-    /// ToolBar
-    /// MARK: Back，Forward, Refresh, Stop
+}
+
+// ToolBar: Back，Forward, Refresh, Stop
+extension RKWebViewController {
+
     func updateToolBarItems() {
         //
         backBarButtonItem.isEnabled = webView.canGoBack
@@ -319,7 +322,11 @@ open class RKWebViewController: UIViewController {
         webView.stopLoading()
     }
     
-    // Back、 forward images
+}
+
+// Back、 forward images
+extension RKWebViewController {
+    
     func backImage() -> UIImage? {
         //
         UIGraphicsBeginImageContextWithOptions(CGSize(width: 12, height: 22), false, 0)
@@ -350,3 +357,4 @@ open class RKWebViewController: UIViewController {
     }
     
 }
+
