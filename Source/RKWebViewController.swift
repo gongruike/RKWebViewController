@@ -135,7 +135,7 @@ open class RKWebViewController: UIViewController {
         view.addSubview(progressView)
         addProgressViewLayoutConstraints()
         
-        load(url: url)
+        load(url)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -160,6 +160,11 @@ open class RKWebViewController: UIViewController {
         removeWebViewObserver()
     }
     
+    open func load(_ url: URL) {
+        
+        webView.load(URLRequest(url: url))
+    }
+    
     // MARK: Override
     open override func viewWillTransition(to size: CGSize,
                                           with coordinator: UIViewControllerTransitionCoordinator) {
@@ -168,10 +173,7 @@ open class RKWebViewController: UIViewController {
         // everytime refresh the webview, it get offset up the navigationbar height
         coordinator.animate(alongsideTransition: nil) { (context) in
             
-            self.onViewWillTransition(
-                to: size,
-                with: coordinator
-            )
+            self.onViewWillTransition(to: size, with: coordinator)
         }
     }
     
@@ -201,11 +203,6 @@ open class RKWebViewController: UIViewController {
                 context: context
             )
         }
-    }
-
-    open func load(url: URL) {
-        
-        webView.load(URLRequest(url: url))
     }
     
     // 变化progressViewTopLayoutConstraint
