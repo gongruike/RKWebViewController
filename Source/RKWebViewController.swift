@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 import UIKit
 import WebKit
 
@@ -37,7 +36,7 @@ open class RKWebViewController: UIViewController {
         static let allKeyPaths          = [title, loading, canGoBack, canGoForward, estimatedProgress]
     }
     
-    open var url: URL
+    open var request: URLRequest
     
     open var webView: WKWebView
     
@@ -105,13 +104,20 @@ open class RKWebViewController: UIViewController {
     
     // Life-cycle
     public convenience init(string: String, webViewConfiguration: WKWebViewConfiguration? = nil) {
-        self.init(url: URL(string: string)!, webViewConfiguration: webViewConfiguration)
+        guard let url = URL(string: string) else {
+            fatalError("string is not a valid uri")
+        }
+        self.init(url: url, webViewConfiguration: webViewConfiguration)
     }
     
-    public init(url: URL, webViewConfiguration: WKWebViewConfiguration? = nil) {
+    public convenience init(url: URL, webViewConfiguration: WKWebViewConfiguration? = nil) {
+        self.init(request: URLRequest(url: url), webViewConfiguration: webViewConfiguration)
+    }
+    
+    public init(request: URLRequest, webViewConfiguration: WKWebViewConfiguration? = nil) {
         
-        self.url = url
-
+        self.request = request
+        
         self.webView = WKWebView(frame: CGRect.zero,
                                  configuration: webViewConfiguration ?? WKWebViewConfiguration())
         
@@ -135,7 +141,7 @@ open class RKWebViewController: UIViewController {
         view.addSubview(progressView)
         addProgressViewLayoutConstraints()
         
-        load(url)
+        load(request)
     }
     
     open override func viewWillAppear(_ animated: Bool) {
@@ -160,9 +166,10 @@ open class RKWebViewController: UIViewController {
         removeWebViewObserver()
     }
     
-    open func load(_ url: URL) {
+    open func load(_ req: URLRequest) {
         
-        webView.load(URLRequest(url: url))
+        request = req
+        webView.load(request)
     }
     
     // MARK: Override
@@ -210,7 +217,6 @@ open class RKWebViewController: UIViewController {
         
         let size = view.bounds.size
         if let navigationBar = navigationController?.navigationBar, !navigationBar.isHidden, navigationBar.isTranslucent {
-            
             let statusBarHeight: CGFloat = (size.width <= size.height) ? UIApplication.shared.statusBarFrame.height : 0
             let navigationBarHeight: CGFloat = navigationBar.bounds.height
             progressViewTopLayoutConstraint.constant = navigationBarHeight + statusBarHeight
@@ -277,9 +283,8 @@ extension RKWebViewController {
     
     open func onEstimatedProgressChange(_ change: [NSKeyValueChangeKey : Any]?) {
         
-        if let progress = change?[NSKeyValueChangeKey.newKey] as? Float {
-            progressView.progress = progress
-        }
+        guard let progress = change?[NSKeyValueChangeKey.newKey] as? Float else { return }
+        progressView.progress = progress
     }
     
 }

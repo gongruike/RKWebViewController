@@ -19,7 +19,9 @@ class ViewController: UIViewController {
 
     @IBAction func onPushBtnClicked(_ sender: Any) {
         //
-        let webView = MyWebViewController(string: "http://www.qq.com")
+//        let webView = MyWebViewController(string: "http://www.qq.com")
+        let webView = MyWebViewController(url: URL(string: "http://www.qq.com")!)
+
         show(webView, sender: nil)
     }
 
